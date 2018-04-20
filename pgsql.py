@@ -1,4 +1,4 @@
-# coding: UTF-8
+# -*- coding: utf-8 -*-
 
 # postgresqlと接続して、類似度の高い単語を含んだ報告書を取り出す
 import psycopg2

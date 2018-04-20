@@ -1,5 +1,7 @@
 /const.py
 /__pycache__
 /advice.pickle
+/advice_10.pickle
 /model/*
 /output/*
+/ldaModel/*
