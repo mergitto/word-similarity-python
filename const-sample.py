@@ -4,3 +4,8 @@ POSTGRES = {
     "DBNAME": "",
     "USER": "",
 }
+
+sql = ""
+SQL = {
+    "QUERY": sql,
+}
