@@ -8,6 +8,8 @@ import mojimoji
 import re
 from const import *
 
+import pickle
+
 conn = psycopg2.connect(
     "host="+POSTGRES["PGHOST"]+" port="+POSTGRES["PORT"]+" dbname="+POSTGRES["DBNAME"]+" user="+POSTGRES["USER"]
 )
@@ -53,3 +55,11 @@ def allAdvise():
             row[3] = re.sub("\(.+?\)", "",row[3])
         adviceDict[index] = {'reportNo': row[4], "companyName": row[1], "companyType": row[2],"advice": row[3]}
     return adviceDict
+
+def dictToPickle():
+    advice = allAdvise()
+    with open("advice.pickle", "wb") as f:
+        pickle.dump(advice, f)
+
+if __name__ == '__main__':
+    dictToPickle()

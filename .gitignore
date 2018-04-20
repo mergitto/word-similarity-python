@@ -1,2 +1,5 @@
 /const.py
 /__pycache__
+/advice.pickle
+/model/*
+/output/*
