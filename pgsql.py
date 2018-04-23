@@ -10,6 +10,8 @@ from const import *
 
 import pickle
 
+from parse import parser
+
 conn = psycopg2.connect(
     "host="+POSTGRES["PGHOST"]+" port="+POSTGRES["PORT"]+" dbname="+POSTGRES["DBNAME"]+" user="+POSTGRES["USER"]
 )
@@ -53,7 +55,7 @@ def allAdvise():
             row[3] = re.sub("[ ][a-z]{1,2}[ ]", "",row[3])
             # ( )で囲まれた部分を削除する 例：<br />
             row[3] = re.sub("\(.+?\)", "",row[3])
-        adviceDict[index] = {'reportNo': row[4], "companyName": row[1], "companyType": row[2],"advice": row[3]}
+        adviceDict[index] = {'reportNo': row[4], "companyName": row[1], "companyType": row[2],"advice": row[3], "advice_divide": parser(row[3] if row[3] is not None else '')}
     return adviceDict
 
 def dictToPickle():
