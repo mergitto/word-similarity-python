@@ -3,13 +3,10 @@
 # postgresqlと接続して、類似度の高い単語を含んだ報告書を取り出す
 import psycopg2
 import psycopg2.extras
-
 import mojimoji
 import re
 from const import *
-
 import pickle
-
 from parse import *
 
 conn = psycopg2.connect(
