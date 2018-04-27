@@ -1,9 +1,9 @@
 /const.py
 /__pycache__
-/advice.pickle
-/advice_10.pickle
+/*.pickle
 /model/*
 /output/*
 /ldaModel/*
 /data/*
 /doc2vec/prototype.model
+/tfidf/*.pickle
