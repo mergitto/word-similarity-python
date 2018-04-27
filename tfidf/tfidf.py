@@ -34,9 +34,7 @@ def gensim_tfidf(advice):
 
         advice[index]['tfidf'] = {}
         for j in i:
-            #print(dictionary[j[0]])
             tfidf_tuple = [ct for ct in corpus_tfidf[index] if ct[0] == j[0]][0]
-            #print(tfidf_tuple, dictionary[tfidf_tuple[0]])
             advice[index]['tfidf'][dictionary[tfidf_tuple[0]]] = tfidf_tuple[1]
 
     return advice
