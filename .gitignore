@@ -6,3 +6,4 @@
 /output/*
 /ldaModel/*
 /data/*
+/doc2vec/prototype.model
