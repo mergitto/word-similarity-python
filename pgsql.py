@@ -18,43 +18,47 @@ conn = psycopg2.connect(
 conn.set_client_encoding('UTF8') # 文字コードの設定
 dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor) # 列名を指定してデータの取得を行う前準備
 
+def clensing(text):
+    text = re.sub("\<.+?\>", "", text)
+    text = text.lower()
+    text = re.sub("\[.+?\]", "", text)
+    text = mojimoji.han_to_zen(mojimoji.zen_to_han(text, kana=False, ascii=False), digit=False) # 数字だけ半角で、カナとローマ字は全角
+    # 同意義語の表記統一
+    text = re.sub("ｂｅｓｔ", "ベスト",text)
+    text = re.sub("ｓｕｃｃｅｓｓｓｑｉ", "サクセスｓｑｉ",text)
+    text = re.sub("ｅｌｓｅ", "ｅｌｓ",text)
+    text = re.sub("ｏｐｅｎｅｓ", "エントリーシート",text)
+    text = re.sub("ｏｐｅｎ　ｅｓ", "エントリーシート",text)
+    text = re.sub("ｏｅｓ", "エントリーシート",text)
+    text = re.sub("ｅｓ", "エントリーシート",text)
+    text = re.sub("ｓｅ", "システムエンジニア",text)
+    text = re.sub("ｇｄ", "グループディスカッション",text)
+    text = re.sub("ｈｐ", "ホームページ",text)
+    text = re.sub("ピーアール", "ｐｒ",text)
+    text = re.sub("ｐｇ", "プログラマー",text)
+    text = re.sub("ｇｃ", "ゲームクリエイター",text)
+    text = re.sub("ウェブ", "ｗｅｂ",text)
+    text = re.sub("コミュニケーション力", "コミュニケーション能力",text)
+    text = re.sub("コニニケーション", "コミュニケーション",text)
+    text = re.sub("コミュニティーション", "コミュニケーション",text)
+    text = re.sub("かんばる", "頑張る",text)
+    text = re.sub("がんばる", "頑張る",text)
+    text = re.sub("かんばって", "頑張って",text)
+    text = re.sub("ｇｐａ", "ｇｐａ ",text) # gpa3.? の場合に gp a3 で分かち書きされるためにgpaの後に空白追加
+    text = re.sub("ｉｔ", "ｉｃｔ",text) # ictの方が現代の言葉なので表記揺れ回避
+    text = mojimoji.zen_to_han(text, kana=False, digit=False)
+    # 単語の英字1〜2文字以下の場合は削除する 例：I am student. -> I, am は削除する
+    text = re.sub("[ ][a-z]{1,2}[ ]", "",text)
+    # ( )で囲まれた部分を削除する 例：<br />
+    text = re.sub("\(.+?\)", "",text)
+    return text
+
 def allAdvise():
     dict_cur.execute(SQL["QUERY"])
     adviceDict = {}
     for index, row in enumerate(dict_cur):
         if row[3] != None:
-            row[3] = re.sub("\<.+?\>", "", row[3])
-            row[3] = row[3].lower()
-            row[3] = re.sub("\[.+?\]", "", row[3])
-            row[3] = mojimoji.han_to_zen(mojimoji.zen_to_han(row[3], kana=False, ascii=False), digit=False) # 数字だけ半角で、カナとローマ字は全角
-            # 同意義語の表記統一
-            row[3] = re.sub("ｂｅｓｔ", "ベスト",row[3])
-            row[3] = re.sub("ｓｕｃｃｅｓｓｓｑｉ", "サクセスｓｑｉ",row[3])
-            row[3] = re.sub("ｅｌｓｅ", "ｅｌｓ",row[3])
-            row[3] = re.sub("ｏｐｅｎｅｓ", "エントリーシート",row[3])
-            row[3] = re.sub("ｏｐｅｎ　ｅｓ", "エントリーシート",row[3])
-            row[3] = re.sub("ｏｅｓ", "エントリーシート",row[3])
-            row[3] = re.sub("ｅｓ", "エントリーシート",row[3])
-            row[3] = re.sub("ｓｅ", "システムエンジニア",row[3])
-            row[3] = re.sub("ｇｄ", "グループディスカッション",row[3])
-            row[3] = re.sub("ｈｐ", "ホームページ",row[3])
-            row[3] = re.sub("ピーアール", "ｐｒ",row[3])
-            row[3] = re.sub("ｐｇ", "プログラマー",row[3])
-            row[3] = re.sub("ｇｃ", "ゲームクリエイター",row[3])
-            row[3] = re.sub("ウェブ", "ｗｅｂ",row[3])
-            row[3] = re.sub("コミュニケーション力", "コミュニケーション能力",row[3])
-            row[3] = re.sub("コニニケーション", "コミュニケーション",row[3])
-            row[3] = re.sub("コミュニティーション", "コミュニケーション",row[3])
-            row[3] = re.sub("かんばる", "頑張る",row[3])
-            row[3] = re.sub("がんばる", "頑張る",row[3])
-            row[3] = re.sub("かんばって", "頑張って",row[3])
-            row[3] = re.sub("ｇｐａ", "ｇｐａ ",row[3]) # gpa3.? の場合に gp a3 で分かち書きされるためにgpaの後に空白追加
-            row[3] = re.sub("ｉｔ", "ｉｃｔ",row[3]) # ictの方が現代の言葉なので表記揺れ回避
-            row[3] = mojimoji.zen_to_han(row[3], kana=False, digit=False)
-            # 単語の英字1〜2文字以下の場合は削除する 例：I am student. -> I, am は削除する
-            row[3] = re.sub("[ ][a-z]{1,2}[ ]", "",row[3])
-            # ( )で囲まれた部分を削除する 例：<br />
-            row[3] = re.sub("\(.+?\)", "",row[3])
+            row[3] = clensing(row[3])
         else:
             row[3] = ''
         print(row[4], '\n',  row[3])
@@ -64,6 +68,7 @@ def allAdvise():
                 "companyType": row[2],
                 "advice": row[3],
                 "advice_divide_mecab": '' if len(row[3]) == 0 else parser_mecab(row[3]),
+                "advice_divide_mecab_space": '' if len(row[3]) == 0 else parser_space(row[3]),
                 #"advice_divide_jumanpp": '' if len(row[3]) == 0 else parser_juman(row[3])
         }
     return adviceDict
