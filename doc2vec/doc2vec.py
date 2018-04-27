@@ -8,7 +8,7 @@ with open('../advice.pickle', 'rb') as f:
 training_code = []
 for reportNo in advice:
     training_code.append(
-            TaggedDocument(words=advice[reportNo]['advice_divide_mecab'], tags=[str(advice[reportNo]['companyName'])])
+            TaggedDocument(words=advice[reportNo]['advice_divide_mecab'], tags=[str(reportNo)])
     )
 
 # dm=0 DBOW dm=1 dmpv
