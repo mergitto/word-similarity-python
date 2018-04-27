@@ -23,7 +23,7 @@ def parser_juman(text):
     words = []
 
     for n in result.mrph_list():
-        if n.hinsi != '助詞' and n.hinsi != '助動詞' and n.hinsi != '特殊':
+        if n.hinsi != '助詞' and n.hinsi != '助動詞' and n.hinsi != '特殊' and n.bunrui != "空白":
             if n.hinsi == '動詞':
                 words.append(n.genkei)
             else:

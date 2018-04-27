@@ -5,17 +5,17 @@ from natto import MeCab
 import sys
 from calc import Calc
 import time
-from parse import parser
+from parse import *
 
 with open('./advice_10.pickle', 'rb') as f:
     advice = pickle.load(f)
 
 if __name__ == '__main__':
-    parse_sentence = parser(sys.argv[1])
+    parse_sentence = parser_mecab(sys.argv[1])
     similarytyDict = {}
 
     for params in advice.values():
-        parse_advice = params['advice_divide']
+        parse_advice = params['advice_divide_mecab']
 
         calculation = Calc()
         jaccard_num = float(calculation.jaccard(parse_sentence, parse_advice))
@@ -26,15 +26,15 @@ if __name__ == '__main__':
 
     top10 = sorted(similarytyDict.values(), key=lambda x: x['similar']['jaccard'], reverse=True)[:10]
     print('Jaccard')
-    for t10 in top10:
-        print(t10['companyName']+ ':' + str(t10['similar']['jaccard']))
+    for index, t10 in enumerate(top10):
+        print(str(index+1) + ':' + t10['companyName']+ ':' + str(t10['similar']['jaccard']))
 
     top10 = sorted(similarytyDict.values(), key=lambda x: x['similar']['dice'], reverse=True)[:10]
     print('\nDice')
-    for t10 in top10:
-        print(t10['companyName']+ ':' + str(t10['similar']['dice']))
+    for index, t10 in enumerate(top10):
+        print(str(index+1) + ':' + t10['companyName']+ ':' + str(t10['similar']['dice']))
 
     top10 = sorted(similarytyDict.values(), key=lambda x: x['similar']['simpson'], reverse=True)[:10]
     print('\nSimpson')
-    for t10 in top10:
-        print(t10['companyName']+ ':' + str(t10['similar']['simpson']))
+    for index, t10 in enumerate(top10):
+        print(str(index+1) + ':' + t10['companyName']+ ':' + str(t10['similar']['simpson']))
