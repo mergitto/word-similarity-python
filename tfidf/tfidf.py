@@ -40,7 +40,7 @@ def gensim_tfidf(advice):
     return advice
 
 if __name__ == '__main__':
-    advice = gensim_tfidf()
+    advice = gensim_tfidf(advice)
 
     with open('advice_10_tfidf.pickle', 'wb') as f:
         pickle.dump(advice, f)

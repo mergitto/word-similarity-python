@@ -2,17 +2,13 @@
 
 import gensim
 from gensim.models import word2vec
-from gensim import corpora
 import sys
 import collections
 import numpy as np
-import re
 import pickle
-from natto import MeCab
 import compTypeList
 import math
-
-mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd') # ipadicの辞書を利用
+from parse import parser_mecab
 
 #定数の宣言
 similaryty = 0.50 # 類似度を設定する
@@ -23,26 +19,18 @@ INPUTWORDPATH = './output/inputWord.txt' # 入力単語を保存するファイ�
 RECCOMPPATH = './output/enterprise.csv' # 推薦企業の上位を保存するファイル
 EVALUATIONPATH = './output/evaluation.csv' # 推薦企業の評価を保存するファイル
 INPUTTYPEPATH = './output/inputType.csv' # 推薦企業の評価を保存するファイル
-WRITE = True # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
+WRITE = False # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
 WEIGHTING = True # 入力文字のから重要単語を選択する場合はTrue,しない場合はFalse
 TYPE = True
 ############
 
 model   = word2vec.Word2Vec.load(sys.argv[1])
+
+# bizreachのモデルを利用する場合は以下のコメントアウトを削除する
+#from gensim.models import KeyedVectors
+#MODEL_FILENAME = "model/bizreach.model"
+#model = KeyedVectors.load_word2vec_format(MODEL_FILENAME, binary=True)
 # LDAによるトピック分類を利用した推薦のためのモデル読み込み
-def loadLda(text=None):
-    test_words = ""
-    for n in mc.parse(text, as_nodes=True):
-        node = n.feature.split(',');
-        if node[0] != '助詞' and node[0] != '助動詞' and node[0] != '記号' and node[1] != '数':
-            if node[0] == '動詞':
-                test_words += node[6]
-            else:
-                test_words += n.surface
-            test_words += " "
-    # テスト用で適当な文章を作成し、どのトピックに当たるかを出力させてみる
-    test_documents = [test_words]
-    test_texts = [[word for word in document.split()] for document in test_documents]
 
 def neighbor_word(posi, nega=[], n=300, inputText = None):
     tmpWordCheck = ''
@@ -101,7 +89,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     for kensaku in results:
         for index in adDicts:
             if adDicts[index]['advice'] is not None: # Noneを含まない場合
-                if adDicts[index]['advice'].lower().find(kensaku[0]) != -1: # adviceに類似度の高い単語が含まれている場合
+                if adDicts[index]['advice'].find(kensaku[0]) != -1: # adviceに類似度の高い単語が含まれている場合
                     adDicts[index]['companyName'] = adDicts[index]["companyName"].replace("\u3000", " ") # 全角空白を半角空白に置換
                     rateCount.append([adDicts[index]["reportNo"], adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
                     reportNoType[adDicts[index]["reportNo"]] = adDicts[index]["companyType"]
@@ -119,20 +107,19 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     compRecommendDic = {}
     simCosDic = {} # 報告書ごとの類似度の合計、cos類似度を格納する
     no_name = [] # report_no and company_name
+    t = 0
+    rateWhere = rateCountNp[:, [0]].reshape(-1,)
     for comp_no in fno1Comp:
-        typeRate = 0 # 業種のレート、アルゴリズムに考慮する
+        typeRate = 0
         # [企業のreport_no, report_noに含まれる類似語の数, 含まれている類似語の類似度全てを抽出]
-        # キーワードの出現回数を考慮した推薦のための式
         # 出現(0,1) + ((類似語出現回数- 1) * 0.05) * 類似度の合計
-        similarSum = rateCountNp[np.where(rateCountNp[:, [0]].reshape(-1,) == str(comp_no))][:,[1, 2]]
+        similarSum = rateCountNp[np.where(rateWhere == str(comp_no))][:,[1, 2]]
         no_name.append([comp_no, similarSum[0][0]])
         if TYPE: # 業種を考慮した計算
             if reportNoType[comp_no] != input_comp_type or input_comp_type == None: # 選択されていない業種を低く設定する
                 typeRate = 0.5
             else:
                 typeRate = 1
-            #typeRate = 1 if reportNoType[comp_no] == input_comp_type else typeRate = 0.3
-        #compRecommendDic[comp_no] = normSimRepo[comp_no] * typeRate * cosSimilar[comp_no] # 類似語出現回数 * 類似語の合計 * 業種（メタ情報） * コサイン類似度（入力と文章の類似度）
         simSum = sum(similarSum[:,1].reshape(-1,).astype(np.float64))
         simLog = 0.0001 if math.log(simSum, 10) < 0 else math.log(simSum, 10)
         if ALGORITHMTYPE == 0:
@@ -145,6 +132,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             # type2: log(類似語の合計) + 業種（メタ情報） + コサイン類似度
             compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
         simCosDic[comp_no] = [simSum, simLog, typeRate, cosSimilar[comp_no]]
+
     inputTypeTmp = str(input_comp_type) + ',' + str(ALGORITHMTYPE) + ',' + str(equation) + '\n'
     fileInput(inputTypeTmp, INPUTTYPEPATH)
     if ALGORITHMTYPE == 0:
@@ -178,16 +166,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             fileInput(tmpEvaluation, EVALUATIONPATH)
 
 def calc(equation):
-    words = []
-    for n in mc.parse(equation, as_nodes=True):
-        node = n.feature.split(',')
-        if node[0] != '助詞' and node[0] != '助動詞' and node[0] != '記号' and node[1] != '数' and node[0] != '動詞' and node[0] != '副詞':
-            if node[0] == '動詞':
-                words.append(node[6])
-            elif node[0] == 'BOS/EOS':
-                continue
-            else:
-                words.append(n.surface)
+    words = parser_mecab(equation)
     neighbor_word(words, inputText=equation)
     fileInput('\n', EVALUATIONPATH)
 

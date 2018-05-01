@@ -15,12 +15,6 @@ import sys
 import numpy as np
 from const import PATH
 
-mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
-
-TOPICNUM = 10 # 学習したトピック数
-train = False # True = 学習を行う False = 訓練したデータをロードして結果を表示する
-
-model   = word2vec.Word2Vec.load(sys.argv[1]) # 文書ごとにベクトルの和を求めるためにword2vecモジュールを読み込み
 
 # 分かち書きの文章を利用して学習を行う
 def trainLda():
@@ -123,6 +117,11 @@ def loadLda(text=None):
     return topicDict
 
 
+mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
+TOPICNUM = 10 # 学習したトピック数
+train = False # True = 学習を行う False = 訓練したデータをロードして結果を表示する
+
+model   = word2vec.Word2Vec.load(sys.argv[1]) # 文書ごとにベクトルの和を求めるためにword2vecモジュールを読み込み
 if __name__ == '__main__':
     if train:
         trainLda()
