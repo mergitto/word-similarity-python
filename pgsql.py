@@ -53,15 +53,17 @@ def clensing(text):
 def allAdvise():
     dict_cur.execute(SQL["QUERY"])
     adviceDict = {}
+    select_count = len(dict_cur.fetchall())
+    dict_cur.execute(SQL["QUERY"])
     for index, row in enumerate(dict_cur):
+        print(round(index / select_count * 100, 3))
         if row[3] != None:
             row[3] = clensing(row[3])
         else:
             row[3] = ''
-        print(row[4], '\n',  row[3])
         adviceDict[index] = {
                 'reportNo': row[4],
-                "companyName": row[1],
+                "companyName": row[1].replace("\u3000", " "),
                 "companyType": row[2],
                 "advice": row[3],
                 "advice_divide_mecab": '' if len(row[3]) == 0 else parser_mecab(row[3]),
