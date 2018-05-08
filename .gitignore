@@ -1,7 +1,8 @@
 /const.py
 /__pycache__
 /*.pickle
-/model/*
+/model/advice.model
+/model/sugoole-juman.model
 /output/*
 /ldaModel/*
 /data/*
