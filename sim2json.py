@@ -16,10 +16,6 @@ similaryty = 0.60 # 類似度を設定する
 INPUTWEIGHT = 1.0 # 入力文字の重み（仮想的な類似度）
 PRIORITYRATE = 5 # 重要単語を選択した時に付加する類似語の類似度の倍率
 LOWPRIORITYRATE = 0.5 # 非重要単語を選択した時に付加する類似語の類似度の倍率
-INPUTWORDPATH = './output/inputWord.txt' # 入力単語を保存するファイル
-RECCOMPPATH = './output/enterprise.csv' # 推薦企業の上位を保存するファイル
-EVALUATIONPATH = './output/evaluation.csv' # 推薦企業の評価を保存するファイル
-INPUTTYPEPATH = './output/inputType.csv' # 推薦企業の評価を保存するファイル
 WRITE = False # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
 WEIGHTING = True # 入力文字のから重要単語を選択する場合はTrue,しない場合はFalse
 TYPE = False
@@ -131,8 +127,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:20]):
         ranking = index + 1
         currentCompanyName = no_name[np.where(no_name[:, [0]].reshape(-1,) == str(primaryComp[0]))][0,[1]][0]
-        recommend = str(ranking) + ',' + str(primaryComp[0]) + ',' + str(primaryComp[1]) + ',' + str(currentCompanyName) + ','
-        advice_json[str(ranking)] = primaryComp[0]
+        advice_json[str(ranking)] = { 'report_no': primaryComp[0], 'recommend_level': str(primaryComp[1])}
     return json_dump(advice_json)
 
 def json_dump(dictionary):
