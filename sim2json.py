@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/local/pyenv/shims/python
 
 import gensim
 from gensim.models import word2vec
@@ -9,7 +10,6 @@ import pickle
 import compTypeList
 import math
 from parse import parser_mecab
-import time
 
 #定数の宣言
 similaryty = 0.60 # 類似度を設定する
@@ -22,14 +22,14 @@ EVALUATIONPATH = './output/evaluation.csv' # 推薦企業の評価を保存す�
 INPUTTYPEPATH = './output/inputType.csv' # 推薦企業の評価を保存するファイル
 WRITE = False # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
 WEIGHTING = True # 入力文字のから重要単語を選択する場合はTrue,しない場合はFalse
-TYPE = True
+TYPE = False
 ############
 
 model   = word2vec.Word2Vec.load(sys.argv[1])
 
 # bizreachのモデルを利用する場合は以下のコメントアウトを削除する
 #from gensim.models import KeyedVectors
-#MODEL_FILENAME = "model/bizreach.model"
+#MODEL_FILENAME = "/var/www/cgi-bin/word-similarity-python/model/bizreach.model"
 #model = KeyedVectors.load_word2vec_format(MODEL_FILENAME, binary=True)
 # LDAによるトピック分類を利用した推薦のためのモデル読み込み
 
@@ -50,7 +50,6 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             continue
         results.append((inputWord, INPUTWEIGHT))
     posi = resultWord
-    print('入力文字',posi)
     if WEIGHTING == True and ALGORITHMTYPE == 0:
         weightingFlag = compTypeList.weightingSimilar(posi)
     for index, po in enumerate(posi): # 入力文字から類似語を出力
@@ -71,14 +70,13 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             # 入力のベクトルの和
             inputVectorSum += model[po]
         except  Exception as e:
-            print('「' + po + '」という単語は見つからなかったです')
             tmpWordCheck += '0,' + po + ','
         count += 1
     inputVectorLength = np.linalg.norm(inputVectorSum)
 
     words = {'positive': posi, 'negative': nega}
     # adDictsのpickleをロードする
-    with open('./tfidf/advice_10_tfidf.pickle', 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
+    with open('/var/www/cgi-bin/word-similarity-python/tfidf/advice_10_tfidf.pickle', 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
         adDicts = pickle.load(f)
     rateCount = []
     topicDic = {} # 入力と文書ごとのトピック積和を格納
@@ -90,7 +88,6 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
                 if adDicts[index]['advice'].find(kensaku[0]) != -1: # adviceに類似度の高い単語が含まれている場合
                     rateCount.append([adDicts[index]["reportNo"], adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
                     reportNoType[adDicts[index]["reportNo"]] = adDicts[index]["companyType"]
-                    #print(rateCount) # 出力例:[reportNo, companyName, 類似語の出現0・1]
                     cosSimilar[adDicts[index]["reportNo"]] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
 
     reportDict = {} # 類似語を含むアドバイスの類似度をreport_no毎に足し算する
@@ -102,11 +99,10 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     simCosDic = {} # 報告書ごとの類似度の合計、cos類似度を格納する
     no_name = [] # report_no and company_name
     t = 0
-    start = time.time()
     reportNp = rateCountNp[:, [0]].reshape(-1,)
     rateCountNp = rateCountNp[:, [1, 2]]
     for comp_no in fno1Comp:
-        typeRate = 0
+        typeRate = 1
         # [企業のreport_no, report_noに含まれる類似語の数, 含まれている類似語の類似度全てを抽出]
         # 出現(0,1) + ((類似語出現回数- 1) * 0.05) * 類似度の合計
         similarSum = rateCountNp[np.where(reportNp == str(comp_no))]
@@ -128,35 +124,28 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             # type2: log(類似語の合計) + 業種（メタ情報） + コサイン類似度
             compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
         simCosDic[comp_no] = [simSum, simLog, typeRate, cosSimilar[comp_no]]
-        timer = time.time() - start
-        t += timer
-        #print(timer)
 
 
     no_name = np.array(no_name)
     advice_json = {}
-    print("類似度が", similaryty, "以上の類似単語を含む報告書を<式：出現(0,1) + ((類似語出現回数- 1) * 0.05) * 類似度の合計>にしたがって推薦度を計算した結果")
-    print('順位 : 報告書No : 推薦度 : 企業名')
     for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:20]):
         ranking = index + 1
         currentCompanyName = no_name[np.where(no_name[:, [0]].reshape(-1,) == str(primaryComp[0]))][0,[1]][0]
         recommend = str(ranking) + ',' + str(primaryComp[0]) + ',' + str(primaryComp[1]) + ',' + str(currentCompanyName) + ','
-        print(recommend)
-        advice_json[ranking] = primaryComp[0]
-    print(json_dump(advice_json))
+        advice_json[str(ranking)] = primaryComp[0]
+    return json_dump(advice_json)
 
 def json_dump(dictionary):
     import json
-    return json.dumps(dictionary, sort_keys=True, indent=4)
+    return json.dumps(dictionary, sort_keys=True)
 
 def calc(equation):
     words = parser_mecab(equation)
-    neighbor_word(words, inputText=equation)
+    return neighbor_word(words, inputText=equation)
 
 if __name__=="__main__":
-    input_comp_type = compTypeList.createList()
-    ALGORITHMTYPE = compTypeList.choiceAlgorithm()
-    equation = compTypeList.inputDoc()
-    calc(equation)
+    ALGORITHMTYPE = 1
+    equation = sys.argv[2]
+    print(calc(equation))
 
 
