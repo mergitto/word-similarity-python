@@ -10,9 +10,10 @@ import pickle
 import compTypeList
 import math
 from parse import parser_mecab
+from parse import is_noun
 
 #定数の宣言
-similaryty = 0.60 # 類似度を設定する
+similaryty = 0.50 # 類似度を設定する
 INPUTWEIGHT = 1.0 # 入力文字の重み（仮想的な類似度）
 PRIORITYRATE = 5 # 重要単語を選択した時に付加する類似語の類似度の倍率
 LOWPRIORITYRATE = 0.5 # 非重要単語を選択した時に付加する類似語の類似度の倍率
@@ -78,13 +79,24 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     topicDic = {} # 入力と文書ごとのトピック積和を格納
     cosSimilar = {} # 入力と文書ごとのコサイン類似度を格納
     reportNoType = {} # 報告書Noと業種の辞書
+    wordDictionary = {} # 報告書ごとの類似単語辞書
+    wordCount = {} # 類似単語の出現回数
+    for index in adDicts:
+        wordDictionary[adDicts[index]["reportNo"]] = {}
+
     for kensaku in results:
+        wordCount[kensaku[0]] = 0
+        if not is_noun(kensaku[0]):
+            continue
         for index in adDicts:
             if adDicts[index]['advice'] is not None: # Noneを含まない場合
                 if adDicts[index]['advice'].find(kensaku[0]) != -1: # adviceに類似度の高い単語が含まれている場合
-                    rateCount.append([adDicts[index]["reportNo"], adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
-                    reportNoType[adDicts[index]["reportNo"]] = adDicts[index]["companyType"]
-                    cosSimilar[adDicts[index]["reportNo"]] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
+                    report_no = adDicts[index]["reportNo"]
+                    wordDictionary[report_no].update({kensaku[0]: kensaku[1]})
+                    rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
+                    reportNoType[report_no] = adDicts[index]["companyType"]
+                    cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
+                    wordCount[kensaku[0]] += 1
 
     reportDict = {} # 類似語を含むアドバイスの類似度をreport_no毎に足し算する
     # 同じ企業名で類似度を合計する
@@ -127,7 +139,10 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:20]):
         ranking = index + 1
         currentCompanyName = no_name[np.where(no_name[:, [0]].reshape(-1,) == str(primaryComp[0]))][0,[1]][0]
-        advice_json[str(ranking)] = { 'report_no': primaryComp[0], 'recommend_level': str(primaryComp[1])}
+        advice_json[str(ranking)] = { 'report_no': primaryComp[0], 'recommend_level': str(primaryComp[1]), "words": wordDictionary[primaryComp[0]] }
+    # ワードクラウド用に類似単語の出現回数を取得してみる
+    [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
+    advice_json['word_count'] = sorted(wordCount.items(), key=lambda x:x[1], reverse=True)
     return json_dump(advice_json)
 
 def json_dump(dictionary):
