@@ -93,7 +93,10 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
                 if adDicts[index]['advice'].find(kensaku[0]) != -1: # adviceに類似度の高い単語が含まれている場合
                     report_no = adDicts[index]["reportNo"]
                     wordDictionary[report_no].update({kensaku[0]: kensaku[1]})
-                    rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
+                    if kensaku[0] in adDicts[index]['tfidf']:
+                        rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
+                    else:
+                        rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
                     reportNoType[report_no] = adDicts[index]["companyType"]
                     cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
                     wordCount[kensaku[0]] += 1
