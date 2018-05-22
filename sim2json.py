@@ -30,6 +30,17 @@ model   = word2vec.Word2Vec.load(sys.argv[1])
 #model = KeyedVectors.load_word2vec_format(MODEL_FILENAME, binary=True)
 # LDAによるトピック分類を利用した推薦のためのモデル読み込み
 
+def min_max(x, min_x, max_x, axis=None):
+    result = (x-min_x)/(max_x-min_x)
+    return result
+
+def list_checked(report_company_type, input_company_type):
+    if report_company_type not in input_company_type or input_company_type == None: # 選択されていない業種を低く設定する
+        rate = 1
+    else:
+        rate = 1.2
+    return rate
+
 def neighbor_word(posi, nega=[], n=300, inputText = None):
     tmpWordCheck = ''
     count = 0
@@ -79,6 +90,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     topicDic = {} # 入力と文書ごとのトピック積和を格納
     cosSimilar = {} # 入力と文書ごとのコサイン類似度を格納
     reportNoType = {} # 報告書Noと業種の辞書
+    reportNoShokushu = {} # 報告書Noと職種の辞書
     wordDictionary = {} # 報告書ごとの類似単語辞書
     wordCount = {} # 類似単語の出現回数
     for index in adDicts:
@@ -98,6 +110,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
                     else:
                         rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
                     reportNoType[report_no] = adDicts[index]["companyType"]
+                    reportNoShokushu[report_no] = adDicts[index]["companyShokushu"]
                     cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
                     wordCount[kensaku[0]] += 1
 
@@ -107,34 +120,30 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     rateCountNp = np.array(rateCount)
 
     compRecommendDic = {}
-    simCosDic = {} # 報告書ごとの類似度の合計、cos類似度を格納する
     no_name = [] # report_no and company_name
     t = 0
     reportNp = rateCountNp[:, [0]].reshape(-1,)
     rateCountNp = rateCountNp[:, [1, 2]]
+
+    jmax_x = max(cosSimilar.values())
+    #min_x = min(cosSimilar.values())
+
     for comp_no in fno1Comp:
-        typeRate = 1
-        # [企業のreport_no, report_noに含まれる類似語の数, 含まれている類似語の類似度全てを抽出]
-        # 出現(0,1) + ((類似語出現回数- 1) * 0.05) * 類似度の合計
+        typeRate = list_checked(reportNoType[comp_no], company_type_name)
+        shokushuRate = list_checked(reportNoShokushu[comp_no], company_shokushu_name)
         similarSum = rateCountNp[np.where(reportNp == str(comp_no))]
         no_name.append([comp_no, similarSum[0][0]])
         simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
-        if TYPE: # 業種を考慮した計算
-            if reportNoType[comp_no] != input_comp_type or input_comp_type == None: # 選択されていない業種を低く設定する
-                typeRate = 0.5
-            else:
-                typeRate = 1
         simLog = 0.0001 if math.log(simSum, 10) < 0 else math.log(simSum, 10)
         if ALGORITHMTYPE == 0:
             # type0: 類似語の合計 * 業種（メタ情報） * コサイン類似度
             compRecommendDic[comp_no] = simSum * typeRate * cosSimilar[comp_no]
         elif ALGORITHMTYPE == 1:
-            # type1: log(類似語の合計) * 業種（メタ情報） * コサイン類似度
-            compRecommendDic[comp_no] = simLog * typeRate * cosSimilar[comp_no]
+            # type1: log(類似語の合計) * 業種（メタ情報） * 職種（メタ情報）* コサイン類似度
+            compRecommendDic[comp_no] = simLog * typeRate * shokushuRate * cosSimilar[comp_no]
         elif ALGORITHMTYPE == 2:
             # type2: log(類似語の合計) + 業種（メタ情報） + コサイン類似度
             compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
-        simCosDic[comp_no] = [simSum, simLog, typeRate, cosSimilar[comp_no]]
 
 
     no_name = np.array(no_name)
@@ -142,10 +151,17 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:20]):
         ranking = index + 1
         currentCompanyName = no_name[np.where(no_name[:, [0]].reshape(-1,) == str(primaryComp[0]))][0,[1]][0]
-        advice_json[str(ranking)] = { 'report_no': primaryComp[0], 'recommend_level': str(primaryComp[1]), "words": wordDictionary[primaryComp[0]] }
+        advice_json[str(ranking)] = {
+                'report_no': primaryComp[0],
+                'recommend_level': str(primaryComp[1]),
+                'words': wordDictionary[primaryComp[0]],
+                'cos': cosSimilar[primaryComp[0]].astype(np.float64),
+                }
     # ワードクラウド用に類似単語の出現回数を取得してみる
     [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
     advice_json['word_count'] = sorted(wordCount.items(), key=lambda x:x[1], reverse=True)
+    advice_json['company_type'] = company_type_name
+    advice_json['company_shokushu'] = company_shokushu_name
     return json_dump(advice_json)
 
 def json_dump(dictionary):
@@ -159,6 +175,8 @@ def calc(equation):
 if __name__=="__main__":
     ALGORITHMTYPE = 1
     equation = sys.argv[2]
+    company_type_name = sys.argv[3].split()
+    company_shokushu_name = sys.argv[4].split()
     print(calc(equation))
 
 
