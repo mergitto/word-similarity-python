@@ -131,7 +131,7 @@ if __name__ == '__main__':
         for index in sugAd:
             if sugAd[index]['advice'] == None:
                 sugAd[index].update({'topic': [0 for i in range(TOPICNUM)]})
-                print('報告書No:', str(sugAd[index]['reportNo']), 'トピックリスト作成中:',round(index/len(sugAd), 4),'%')
+                print('報告書No:', str(sugAd[index]['reportNo']), 'トピックリスト作成中:',round(index/len(sugAd) * 100, 3),'%')
             else:
                 value = sugAd[index]
                 # アドバイスデータの加工
