@@ -143,7 +143,7 @@ if __name__ == '__main__':
                 sugAd[index].update({'topic':topic['topic']}) # topicListを加えたデータに更新
                 sugAd[index].update({'vectorSum':topic['vectorSum']}) # 文書のベクトルの和を加えたデータに更新
                 sugAd[index].update({'vectorLength':topic['vectorLength']}) # 文書のベクトルの和を加えたデータに更新
-                print('報告書No:', str(sugAd[index]['reportNo']), 'トピックリスト作成中:',round(index/len(sugAd), 4),'%')
+                print('報告書No:', str(sugAd[index]['reportNo']), 'トピックリスト作成中:',round(index/len(sugAd) * 100, 3),'%')
 
         with open('./advice_%s.pickle' % TOPICNUM, 'wb') as f:
             pickle.dump(sugAd, f)
