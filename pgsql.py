@@ -66,6 +66,7 @@ def allAdvise():
                 "companyName": row[1].replace("\u3000", " "),
                 "companyType": row[2],
                 "advice": row[3],
+                "companyShokushu": row[5],
                 "advice_divide_mecab": '' if len(row[3]) == 0 else parser_mecab(row[3]),
                 "advice_divide_mecab_space": '' if len(row[3]) == 0 else parser_space(row[3]),
                 #"advice_divide_jumanpp": '' if len(row[3]) == 0 else parser_juman(row[3])
