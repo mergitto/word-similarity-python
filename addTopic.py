@@ -110,7 +110,10 @@ def loadLda(text=None):
     vectorSum = 0 # 文書の単語ごとのベクトルの和を格納する
     for word in test_texts[0]:
         if not word in sw:
-            vectorSum += model[word]
+            try:
+                vectorSum += model[word]
+            except:
+                pass
     topicDict['vectorSum'] = vectorSum
     topicDict['vectorLength'] = np.linalg.norm(vectorSum)
 
