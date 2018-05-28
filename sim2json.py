@@ -11,6 +11,7 @@ import compTypeList
 import math
 from parse import parser_mecab
 from parse import is_noun
+from replace import change_word
 
 #定数の宣言
 similaryty = 0.50 # 類似度を設定する
@@ -51,6 +52,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     resultWord = [] # 入力文字の中でword2vecによって学習されている単語を格納する
     posi = sorted(list(set(posi)), key=posi.index)
     for inputWord in posi:
+        inputWord = change_word(inputWord)
         try:
             result = model.most_similar(positive = inputWord, negative = nega, topn = n)
             resultWord.append(inputWord)
