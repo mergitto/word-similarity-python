@@ -54,7 +54,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     for inputWord in posi:
         inputWord = change_word(inputWord)
         try:
-            result = model.most_similar(positive = inputWord, negative = nega, topn = n)
+            model.most_similar(positive = inputWord, negative = nega, topn = n)
             resultWord.append(inputWord)
         except  Exception as e:
             continue
