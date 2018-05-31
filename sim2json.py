@@ -36,7 +36,7 @@ def min_max(x, min_x, max_x, axis=None):
     return result
 
 def list_checked(report_company_type, input_company_type):
-    if report_company_type not in input_company_type or input_company_type == None: # 選択されていない業種を低く設定する
+    if report_company_type not in input_company_type or input_company_type == None:
         rate = 1
     else:
         rate = 1.2
@@ -122,19 +122,14 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     rateCountNp = np.array(rateCount)
 
     compRecommendDic = {}
-    no_name = [] # report_no and company_name
     t = 0
     reportNp = rateCountNp[:, [0]].reshape(-1,)
     rateCountNp = rateCountNp[:, [1, 2]]
-
-    jmax_x = max(cosSimilar.values())
-    #min_x = min(cosSimilar.values())
 
     for comp_no in fno1Comp:
         typeRate = list_checked(reportNoType[comp_no], company_type_name)
         shokushuRate = list_checked(reportNoShokushu[comp_no], company_shokushu_name)
         similarSum = rateCountNp[np.where(reportNp == str(comp_no))]
-        no_name.append([comp_no, similarSum[0][0]])
         simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
         simLog = 0.0001 if math.log(simSum, 10) < 0 else math.log(simSum, 10)
         if ALGORITHMTYPE == 0:
@@ -148,11 +143,9 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
 
 
-    no_name = np.array(no_name)
     advice_json = {}
     for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:20]):
         ranking = index + 1
-        currentCompanyName = no_name[np.where(no_name[:, [0]].reshape(-1,) == str(primaryComp[0]))][0,[1]][0]
         advice_json[str(ranking)] = {
                 'report_no': primaryComp[0],
                 'recommend_level': str(primaryComp[1]),
