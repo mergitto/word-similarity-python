@@ -12,6 +12,7 @@ import math
 from parse import parser_mecab
 from parse import is_noun
 from replace import change_word
+from calc import Calc
 
 #定数の宣言
 similaryty = 0.50 # 類似度を設定する
@@ -23,7 +24,7 @@ WEIGHTING = True # 入力文字のから重要単語を選択する場合はTrue
 TYPE = False
 ############
 
-model   = word2vec.Word2Vec.load(sys.argv[1])
+model = word2vec.Word2Vec.load(sys.argv[1])
 
 # bizreachのモデルを利用する場合は以下のコメントアウトを削除する
 #from gensim.models import KeyedVectors
@@ -41,6 +42,14 @@ def list_checked(report_company_type, input_company_type):
     else:
         rate = 1.2
     return rate
+
+def cos_norm(cosSimilar):
+    calc = Calc()
+    list_cos = [cos for cos in cosSimilar.values()]
+    for key in cosSimilar:
+        current_cos = cosSimilar[key]
+        cosSimilar[key] = calc.normalization(current_cos, list_cos)
+    return cosSimilar
 
 def neighbor_word(posi, nega=[], n=300, inputText = None):
     tmpWordCheck = ''
@@ -103,18 +112,23 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
         if not is_noun(kensaku[0]):
             continue
         for index in adDicts:
-            if adDicts[index]['advice'] is not None: # Noneを含まない場合
-                if adDicts[index]['advice'].find(kensaku[0]) != -1: # adviceに類似度の高い単語が含まれている場合
-                    report_no = adDicts[index]["reportNo"]
-                    wordDictionary[report_no].update({kensaku[0]: kensaku[1]})
-                    if kensaku[0] in adDicts[index]['tfidf']:
-                        rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
-                    else:
-                        rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
-                    reportNoType[report_no] = adDicts[index]["companyType"]
-                    reportNoShokushu[report_no] = adDicts[index]["companyShokushu"]
-                    cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
-                    wordCount[kensaku[0]] += 1
+            if adDicts[index]['advice'] is None: # Noneを含まない場合
+                continue
+            if adDicts[index]['advice'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
+                continue
+            report_no = adDicts[index]["reportNo"]
+            wordDictionary[report_no].update({kensaku[0]: kensaku[1]})
+            if kensaku[0] in adDicts[index]['tfidf']:
+                rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
+            else:
+                rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
+            reportNoType[report_no] = adDicts[index]["companyType"]
+            reportNoShokushu[report_no] = adDicts[index]["companyShokushu"]
+            cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
+            wordCount[kensaku[0]] += 1
+
+    # 内積の計算でコサイン類似度がマイナスになることがあったので、正規化した
+    cosSimilar = cos_norm(cosSimilar)
 
     reportDict = {} # 類似語を含むアドバイスの類似度をreport_no毎に足し算する
     # 同じ企業名で類似度を合計する
