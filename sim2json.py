@@ -112,9 +112,9 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
         if not is_noun(kensaku[0]):
             continue
         for index in adDicts:
-            if adDicts[index]['advice'] is None: # Noneを含まない場合
+            if adDicts[index]['advice'] == '':
                 continue
-            if adDicts[index]['advice'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
+            if adDicts[index]['advice_divide_mecab_space'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
                 continue
             report_no = adDicts[index]["reportNo"]
             wordDictionary[report_no].update({kensaku[0]: kensaku[1]})
@@ -151,7 +151,8 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             compRecommendDic[comp_no] = simSum * typeRate * cosSimilar[comp_no]
         elif ALGORITHMTYPE == 1:
             # type1: log(類似語の合計) * 業種（メタ情報） * 職種（メタ情報）* コサイン類似度
-            compRecommendDic[comp_no] = simLog * typeRate * shokushuRate * cosSimilar[comp_no]
+            #compRecommendDic[comp_no] = simLog * typeRate * shokushuRate * cosSimilar[comp_no]
+            compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * (typeRate * shokushuRate)
         elif ALGORITHMTYPE == 2:
             # type2: log(類似語の合計) + 業種（メタ情報） + コサイン類似度
             compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
