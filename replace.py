@@ -10,3 +10,12 @@ def change_word(word):
     word = word.replace("oes", "エントリーシート")
     word = word.replace("se", "システムエンジニア")
     return word
+
+def decode_word(word):
+    word = word.replace('ict', 'it')
+    word = word.replace("web", "ウェブ")
+    word = word.replace("グループディスカッション", "gd")
+    word = word.replace("プログラマー", "pg")
+    word = word.replace("エントリーシート", "es")
+    word = word.replace("システムエンジニア", "se")
+    return word

@@ -12,6 +12,7 @@ import math
 from parse import parser_mecab
 from parse import is_noun
 from replace import change_word
+from replace import decode_word
 from calc import Calc
 
 #定数の宣言
@@ -112,13 +113,15 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
         if not is_noun(kensaku[0]):
             continue
         for index in adDicts:
+            if len(adDicts[index]['advice_divide_mecab']) < 10:
+                continue
             if adDicts[index]['advice'] == '':
                 continue
             #if adDicts[index]['advice_divide_mecab_space'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
             if kensaku[0] not in adDicts[index]['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
                 continue
             report_no = adDicts[index]["reportNo"]
-            wordDictionary[report_no].update({kensaku[0]: kensaku[1]})
+            wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
             if kensaku[0] in adDicts[index]['tfidf']:
                 rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
             else:
