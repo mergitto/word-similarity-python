@@ -65,6 +65,11 @@ def trainLda():
 
     #LDAモデルによる学習
     lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=TOPICNUM, id2word=dictionary)
+    # 学習により得たトピック
+    print('トピック')
+    pprint(lda.show_topics(num_topics=TOPICNUM))
+    # ldaによるトピックをcsvで出力
+    pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv("./ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
     lda.save('./ldaModel/lda_%s.model' % TOPICNUM)  # 保存
 
 
@@ -73,10 +78,6 @@ def loadLda(text=None):
     dictionary = corpora.Dictionary.load('./ldaModel/lda_%s.txt' % TOPICNUM)
     corpus = corpora.MmCorpus('./ldaModel/lda_%s.mm' % TOPICNUM)
     lda = gensim.models.ldamodel.LdaModel.load('./ldaModel/lda_%s.model' % TOPICNUM)
-    # 学習により得たトピック
-    #pprint(lda.show_topics(num_topics=TOPICNUM))
-    # ldaによるトピックをcsvで出力
-    pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv("./ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
 
     test_words = ""
     for n in mc.parse(text, as_nodes=True):
