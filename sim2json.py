@@ -165,7 +165,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
 
 
     advice_json = {}
-    for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:20]):
+    for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:100]):
         ranking = index + 1
         advice_json[str(ranking)] = {
                 'report_no': primaryComp[0],
