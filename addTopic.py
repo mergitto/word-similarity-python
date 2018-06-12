@@ -72,9 +72,7 @@ def trainLda():
     pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv("./ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
     lda.save('./ldaModel/lda_%s.model' % TOPICNUM)  # 保存
 
-
-# 訓練したデータをロードしてトピック分類を行う
-def loadLda(text=None):
+def lda_value(text=None):
     dictionary = corpora.Dictionary.load('./ldaModel/lda_%s.txt' % TOPICNUM)
     corpus = corpora.MmCorpus('./ldaModel/lda_%s.mm' % TOPICNUM)
     lda = gensim.models.ldamodel.LdaModel.load('./ldaModel/lda_%s.model' % TOPICNUM)
@@ -102,6 +100,11 @@ def loadLda(text=None):
         for x in range(topicCount):
             topicList[topics_per_document[x][0]] = topics_per_document[x][1] # トピックに属していたもののみリストの修正
         topicDict['topic'] = topicList
+    return topicDict, test_texts
+
+# 訓練したデータをロードしてトピック分類を行う
+def loadLda(text=None):
+    topicDict, test_texts = lda_value(text)
 
     # ストップワードの除去しつつベクトルの和を計算
     f = urllib.request.urlopen('http://svn.sourceforge.jp/svnroot/slothlib/CSharp/Version1/SlothLib/NLP/Filter/StopWord/word/Japanese.txt')
