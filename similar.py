@@ -7,7 +7,9 @@ from calc import Calc
 import time
 from parse import *
 
-with open('./advice_10.pickle', 'rb') as f:
+SHOWNUM = 20
+
+with open('./tfidf/advice_10_tfidf.pickle', 'rb') as f:
     advice = pickle.load(f)
 
 if __name__ == '__main__':
@@ -24,17 +26,17 @@ if __name__ == '__main__':
 
         similarytyDict[params['reportNo']] = {'companyName': params['companyName'], 'similar': {'jaccard': jaccard_num, 'dice': dice_num,'simpson': simpson_num}}
 
-    top10 = sorted(similarytyDict.values(), key=lambda x: x['similar']['jaccard'], reverse=True)[:10]
+    top = sorted(similarytyDict.values(), key=lambda x: x['similar']['jaccard'], reverse=True)[:SHOWNUM]
     print('Jaccard')
-    for index, t10 in enumerate(top10):
-        print(str(index+1) + ':' + t10['companyName']+ ':' + str(t10['similar']['jaccard']))
+    for index, t in enumerate(top):
+        print(str(index+1) + ':' + t['companyName']+ ':' + str(t['similar']['jaccard']))
 
-    top10 = sorted(similarytyDict.values(), key=lambda x: x['similar']['dice'], reverse=True)[:10]
+    top = sorted(similarytyDict.values(), key=lambda x: x['similar']['dice'], reverse=True)[:SHOWNUM]
     print('\nDice')
-    for index, t10 in enumerate(top10):
-        print(str(index+1) + ':' + t10['companyName']+ ':' + str(t10['similar']['dice']))
+    for index, t in enumerate(top):
+        print(str(index+1) + ':' + t['companyName']+ ':' + str(t['similar']['dice']))
 
-    top10 = sorted(similarytyDict.values(), key=lambda x: x['similar']['simpson'], reverse=True)[:10]
+    top = sorted(similarytyDict.values(), key=lambda x: x['similar']['simpson'], reverse=True)[:SHOWNUM]
     print('\nSimpson')
-    for index, t10 in enumerate(top10):
-        print(str(index+1) + ':' + t10['companyName']+ ':' + str(t10['similar']['simpson']))
+    for index, t in enumerate(top):
+        print(str(index+1) + ':' + t['companyName']+ ':' + str(t['similar']['simpson']))

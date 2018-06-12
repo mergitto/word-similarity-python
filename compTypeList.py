@@ -1,22 +1,13 @@
 import pickle
 
-def createList():
-    with open('./advice.pickle', 'rb') as f:
-        adDicts = pickle.load(f)
+def createList(adDicts):
     typeList = []
     for t in adDicts.values():
         if t['companyType'] != None:
             typeList.append(t['companyType'])
     company_type = sorted(list(set(typeList)))
     company_type.append(None)
-    [print(index, compList) for index, compList in enumerate(company_type)]
-    while True:
-        cType = input("志望する業種を選んでください:")
-        print("「",company_type[int(cType)],"」でいいですか。")
-        if int(input("Yes=1  No=0 :"))  == 1:
-            break
-
-    return company_type[int(cType)]
+    return company_type
 
 
 def inputDoc():

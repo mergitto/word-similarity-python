@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-def parser_mecab(text):
-    from natto import MeCab
-    mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
+from natto import MeCab
+mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
 
+def parser_mecab(text):
     words = []
     for n in mc.parse(text, as_nodes=True):
         node = n.feature.split(',');
@@ -17,10 +17,15 @@ def parser_mecab(text):
                 words.append(n.surface)
     return words
 
-def parser_space(text):
-    from natto import MeCab
-    mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
+def is_noun(word):
+    for n in mc.parse(word, as_nodes=True):
+        node = n.feature.split(',');
+        if node[0] == '名詞':
+            return True
+        else:
+            return False
 
+def parser_space(text):
     words = ""
     for n in mc.parse(text, as_nodes=True):
         node = n.feature.split(',');
