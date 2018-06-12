@@ -14,6 +14,7 @@ import re
 import sys
 import numpy as np
 from const import PATH
+from parse import parser_mecab
 
 
 # 分かち書きの文章を利用して学習を行う
@@ -72,25 +73,11 @@ def trainLda():
     pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv("./ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
     lda.save('./ldaModel/lda_%s.model' % TOPICNUM)  # 保存
 
-def lda_value(text=None):
+def lda_value(text, parse_text):
     dictionary = corpora.Dictionary.load('./ldaModel/lda_%s.txt' % TOPICNUM)
-    corpus = corpora.MmCorpus('./ldaModel/lda_%s.mm' % TOPICNUM)
+    test_corpus = [dictionary.doc2bow(text) for text in parse_text]
+
     lda = gensim.models.ldamodel.LdaModel.load('./ldaModel/lda_%s.model' % TOPICNUM)
-
-    test_words = ""
-    for n in mc.parse(text, as_nodes=True):
-        node = n.feature.split(',');
-        if node[0] != '助詞' and node[0] != '助動詞' and node[0] != '記号' and node[1] != '数':
-            if node[0] == '動詞':
-                test_words += node[6]
-            else:
-                test_words += n.surface
-            test_words += " "
-    # テスト用で適当な文章を作成し、どのトピックに当たるかを出力させてみる
-    test_documents = [test_words]
-    test_texts = [[word for word in document.split()] for document in test_documents]
-    test_corpus = [dictionary.doc2bow(text) for text in test_texts]
-
     # 文書に付いているトピックを計算する
     for topics_per_document in lda[test_corpus]:
         topicDict = {}
@@ -100,11 +87,12 @@ def lda_value(text=None):
         for x in range(topicCount):
             topicList[topics_per_document[x][0]] = topics_per_document[x][1] # トピックに属していたもののみリストの修正
         topicDict['topic'] = topicList
-    return topicDict, test_texts
+    return topicDict
 
 # 訓練したデータをロードしてトピック分類を行う
 def loadLda(text=None):
-    topicDict, test_texts = lda_value(text)
+    parse_text = [parser_mecab(text)]
+    topicDict = lda_value(text, parse_text)
 
     # ストップワードの除去しつつベクトルの和を計算
     f = urllib.request.urlopen('http://svn.sourceforge.jp/svnroot/slothlib/CSharp/Version1/SlothLib/NLP/Filter/StopWord/word/Japanese.txt')
@@ -112,7 +100,7 @@ def loadLda(text=None):
     sw = [ss for ss in sw if not ss==u''] # 空白を削除
     f.close()
     vectorSum = 0 # 文書の単語ごとのベクトルの和を格納する
-    for word in test_texts[0]:
+    for word in parse_text[0]:
         if not word in sw:
             try:
                 vectorSum += model[word]
