@@ -15,7 +15,9 @@ import sys
 import numpy as np
 from const import PATH
 from parse import parser_mecab
+import os
 
+ROOTPATH = os.path.dirname(os.path.abspath(__file__))
 
 # 分かち書きの文章を利用して学習を行う
 def trainLda():
@@ -59,10 +61,10 @@ def trainLda():
 
 
     dictionary = corpora.Dictionary(texts)
-    dictionary.save('./ldaModel/lda_%s.txt' % TOPICNUM)
+    dictionary.save(ROOTPATH+'/ldaModel/lda_%s.txt' % TOPICNUM)
 
     corpus = [dictionary.doc2bow(text) for text in texts]
-    corpora.MmCorpus.serialize('./ldaModel/lda_%s.mm' % TOPICNUM, corpus)
+    corpora.MmCorpus.serialize(ROOTPATH+'/ldaModel/lda_%s.mm' % TOPICNUM, corpus)
 
     #LDAモデルによる学習
     lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=TOPICNUM, id2word=dictionary)
@@ -70,14 +72,14 @@ def trainLda():
     print('トピック')
     pprint(lda.show_topics(num_topics=TOPICNUM))
     # ldaによるトピックをcsvで出力
-    pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv("./ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
-    lda.save('./ldaModel/lda_%s.model' % TOPICNUM)  # 保存
+    pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv(ROOTPATH+"/ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
+    lda.save(ROOTPATH+'/ldaModel/lda_%s.model' % TOPICNUM)  # 保存
 
 def lda_value(text, parse_text):
-    dictionary = corpora.Dictionary.load('./ldaModel/lda_%s.txt' % TOPICNUM)
+    dictionary = corpora.Dictionary.load(ROOTPATH+'/ldaModel/lda_%s.txt' % TOPICNUM)
     test_corpus = [dictionary.doc2bow(text) for text in parse_text]
 
-    lda = gensim.models.ldamodel.LdaModel.load('./ldaModel/lda_%s.model' % TOPICNUM)
+    lda = gensim.models.ldamodel.LdaModel.load(ROOTPATH+'/ldaModel/lda_%s.model' % TOPICNUM)
     # 文書に付いているトピックを計算する
     for topics_per_document in lda[test_corpus]:
         topicDict = {}
