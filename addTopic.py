@@ -14,7 +14,10 @@ import re
 import sys
 import numpy as np
 from const import PATH
+from parse import parser_mecab
+import os
 
+ROOTPATH = os.path.dirname(os.path.abspath(__file__))
 
 # 分かち書きの文章を利用して学習を行う
 def trainLda():
@@ -58,40 +61,25 @@ def trainLda():
 
 
     dictionary = corpora.Dictionary(texts)
-    dictionary.save('./ldaModel/lda_%s.txt' % TOPICNUM)
+    dictionary.save(ROOTPATH+'/ldaModel/lda_%s.txt' % TOPICNUM)
 
     corpus = [dictionary.doc2bow(text) for text in texts]
-    corpora.MmCorpus.serialize('./ldaModel/lda_%s.mm' % TOPICNUM, corpus)
+    corpora.MmCorpus.serialize(ROOTPATH+'/ldaModel/lda_%s.mm' % TOPICNUM, corpus)
 
     #LDAモデルによる学習
     lda = gensim.models.ldamodel.LdaModel(corpus=corpus, num_topics=TOPICNUM, id2word=dictionary)
-    lda.save('./ldaModel/lda_%s.model' % TOPICNUM)  # 保存
-
-
-# 訓練したデータをロードしてトピック分類を行う
-def loadLda(text=None):
-    dictionary = corpora.Dictionary.load('./ldaModel/lda_%s.txt' % TOPICNUM)
-    corpus = corpora.MmCorpus('./ldaModel/lda_%s.mm' % TOPICNUM)
-    lda = gensim.models.ldamodel.LdaModel.load('./ldaModel/lda_%s.model' % TOPICNUM)
     # 学習により得たトピック
-    #pprint(lda.show_topics(num_topics=TOPICNUM))
+    print('トピック')
+    pprint(lda.show_topics(num_topics=TOPICNUM))
     # ldaによるトピックをcsvで出力
-    pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv("./ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
+    pd.DataFrame(lda.show_topics(num_topics=TOPICNUM)).to_csv(ROOTPATH+"/ldaModel/topic_%s.csv" % TOPICNUM, header=None, index=None)
+    lda.save(ROOTPATH+'/ldaModel/lda_%s.model' % TOPICNUM)  # 保存
 
-    test_words = ""
-    for n in mc.parse(text, as_nodes=True):
-        node = n.feature.split(',');
-        if node[0] != '助詞' and node[0] != '助動詞' and node[0] != '記号' and node[1] != '数':
-            if node[0] == '動詞':
-                test_words += node[6]
-            else:
-                test_words += n.surface
-            test_words += " "
-    # テスト用で適当な文章を作成し、どのトピックに当たるかを出力させてみる
-    test_documents = [test_words]
-    test_texts = [[word for word in document.split()] for document in test_documents]
-    test_corpus = [dictionary.doc2bow(text) for text in test_texts]
+def lda_value(text, parse_text):
+    dictionary = corpora.Dictionary.load(ROOTPATH+'/ldaModel/lda_%s.txt' % TOPICNUM)
+    test_corpus = [dictionary.doc2bow(text) for text in parse_text]
 
+    lda = gensim.models.ldamodel.LdaModel.load(ROOTPATH+'/ldaModel/lda_%s.model' % TOPICNUM)
     # 文書に付いているトピックを計算する
     for topics_per_document in lda[test_corpus]:
         topicDict = {}
@@ -101,6 +89,12 @@ def loadLda(text=None):
         for x in range(topicCount):
             topicList[topics_per_document[x][0]] = topics_per_document[x][1] # トピックに属していたもののみリストの修正
         topicDict['topic'] = topicList
+    return topicDict
+
+# 訓練したデータをロードしてトピック分類を行う
+def loadLda(text=None):
+    parse_text = [parser_mecab(text)]
+    topicDict = lda_value(text, parse_text)
 
     # ストップワードの除去しつつベクトルの和を計算
     f = urllib.request.urlopen('http://svn.sourceforge.jp/svnroot/slothlib/CSharp/Version1/SlothLib/NLP/Filter/StopWord/word/Japanese.txt')
@@ -108,7 +102,7 @@ def loadLda(text=None):
     sw = [ss for ss in sw if not ss==u''] # 空白を削除
     f.close()
     vectorSum = 0 # 文書の単語ごとのベクトルの和を格納する
-    for word in test_texts[0]:
+    for word in parse_text[0]:
         if not word in sw:
             try:
                 vectorSum += model[word]
@@ -121,7 +115,7 @@ def loadLda(text=None):
 
 
 mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
-TOPICNUM = 10 # 学習したトピック数
+TOPICNUM = 2 # 学習したトピック数
 train = False # True = 学習を行う False = 訓練したデータをロードして結果を表示する
 
 model   = word2vec.Word2Vec.load(sys.argv[1]) # 文書ごとにベクトルの和を求めるためにword2vecモジュールを読み込み
