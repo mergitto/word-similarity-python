@@ -7,7 +7,6 @@ import sys
 import collections
 import numpy as np
 import pickle
-import compTypeList
 import math
 from parse import parser_mecab
 from parse import is_noun
