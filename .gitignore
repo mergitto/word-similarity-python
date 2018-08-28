@@ -2,6 +2,7 @@
 /__pycache__
 /*.pickle
 /model/*.model
+/model/webdb/*
 /model/sugoole-juman.model
 /output/*
 /ldaModel/*
