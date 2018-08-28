@@ -48,14 +48,15 @@ def pca_2d_2groups(vectors, target1, target2, topn=100):
 
     transformed1 = get_pca(vectors, target1)
     transformed2 = get_pca(vectors, target2)
+    label_char = "の類似語"
 
     # 主成分をプロットする
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
 
-    ax.scatter(transformed1[:, 0], transformed1[:, 1], c="red", label="high", marker="^")
-    ax.scatter(transformed2[:, 0], transformed2[:, 1], c="green", label="low", marker="s")
-    ax.set_title('2単語の類似度のベクトル次元削減')
+    ax.scatter(transformed1[:, 0], transformed1[:, 1], c="red", label=target1+label_char, marker="^")
+    ax.scatter(transformed2[:, 0], transformed2[:, 1], c="green", label=target2+label_char, marker="s")
+    ax.set_title(target1+"と"+target2+'の類似度のベクトル次元削減')
     ax.set_xlabel('pc1')
     ax.set_ylabel('pc2')
 
@@ -66,10 +67,11 @@ if __name__ == '__main__':
     from gensim.models import word2vec
 
     FONTPATH = 'Osaka.ttc'
-    MODEL_FILENAME = "../model/advice20180529.model"
+    MODEL_FILENAME = "../model/advice20180521.model"
     w2v = word2vec.Word2Vec.load(MODEL_FILENAME)
 
     draw_2d_2groups(w2v, '面接', 'グループディスカッション', topn=40)
-    pca_2d_2groups(w2v, '面接', 'グループディスカッション', topn=40)
+    #pca_2d_2groups(w2v, '面接', 'グループディスカッション', topn=40)
+    #draw_2d_2groups(w2v, '資格', 'グループディスカッション', topn=40)
 
 

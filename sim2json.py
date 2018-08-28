@@ -71,8 +71,6 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             continue
         results.append((inputWord, INPUTWEIGHT))
     posi = resultWord
-    if WEIGHTING == True and ALGORITHMTYPE == 0:
-        weightingFlag = compTypeList.weightingSimilar(posi)
     for index, po in enumerate(posi): # 入力文字から類似語を出力
         try:
             result = model.most_similar(positive = po, negative = nega, topn = n)
