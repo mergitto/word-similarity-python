@@ -61,7 +61,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             pass
     inputVectorLength = np.linalg.norm(inputVectorSum) # 入力文字のベクトル長を格納
 
-    words = {'positive': posi, 'negative': nega}
     # adDictsのpickleをロードする
     with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
         adDicts = pickle.load(f)
@@ -169,8 +168,7 @@ def calc(equation):
 model = word2vec.Word2Vec.load(sys.argv[1])
 
 if __name__=="__main__":
-    equation = sys.argv[2]
-    equation = change_word(equation)
+    equation = change_word(sys.argv[2])
     company_type_name = sys.argv[3].split()
     company_shokushu_name = sys.argv[4].split()
     det_check = sys.argv[5]
