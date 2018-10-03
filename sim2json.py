@@ -79,12 +79,14 @@ def calcSimLog(simSum):
     simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
     return simLog * 1.2
 
+def is_few_words(parse_text):
+    if len(parse_text) < LOWEST_WORD_LENGTH:
+        return True
+    return False
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
-
-    adDicts = load_reports()
 
     rateCount = []
     reportNoType = {} # 報告書Noと業種の辞書
@@ -94,6 +96,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     lda = {}
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
+
+    adDicts = load_reports()
     for index in adDicts:
         wordDictionary[adDicts[index]["reportNo"]] = {}
     calc = Calc()
@@ -103,7 +107,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         if not is_noun(kensaku[0]): continue
         for index in adDicts:
             report = adDicts[index]
-            if len(report['advice_divide_mecab']) < LOWEST_WORD_LENGTH: continue
+            if is_few_words(report['advice_divide_mecab']): continue
             if report['advice'] == '': continue
             report_no = report["reportNo"]
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
