@@ -103,26 +103,28 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     calc = Calc()
 
     for kensaku in results:
-        wordCount[kensaku[0]] = 0
-        if not is_noun(kensaku[0]): continue
+        similarWord = kensaku[0]
+        cosineSimilarity = kensaku[1]
+        wordCount[similarWord] = 0
+        if not is_noun(similarWord): continue
         for index in adDicts:
             report = adDicts[index]
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
             report_no = report["reportNo"]
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
-            if kensaku[0] not in report['advice_divide_mecab']: continue
+            if similarWord not in report['advice_divide_mecab']: continue
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
-            wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
-            if kensaku[0] in report['tfidf']:
-                similarity = report['tfidf'][kensaku[0]] * kensaku[1]
+            wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
+            if similarWord in report['tfidf']:
+                similarity = report['tfidf'][similarWord] * cosineSimilarity
             else:
-                similarity = kensaku[1]
+                similarity = cosineSimilarity
             rateCount.append([report_no, report["companyName"], similarity])
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
             lda[report_no] = report['topic']
-            wordCount[kensaku[0]] += 1
+            wordCount[similarWord] += 1
 
 
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
