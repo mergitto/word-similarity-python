@@ -71,6 +71,18 @@ def is_not_match_report(company_type, company_shokushu):
             return True
     return False
 
+def calcSimSum(similarSumary):
+    if len(similarSumary) == 0:
+        simSum = 0
+    else:
+        simSum = np.sum(similarSumary[:,1].reshape(-1,).astype(np.float64))
+    return simSum
+
+def calcSimLog(simSum):
+    simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
+    return simLog * 1.2
+
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results, inputVectorSum = get_similar_words(posi)
@@ -129,12 +141,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         typeRate = list_checked(reportNoType[report_no], company_type_name)
         shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
         similarSum = rateCountNp[np.where(reportNp == str(report_no))]
-        if len(similarSum) == 0:
-            similarSum = 0
-        else:
-            simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
-        simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
-        simLog = simLog * 1.2
+        simSum = calcSimSum(similarSum)
+        simLog = calcSimLog(simSum)
         compRecommendDic[report_no] = simLog + jsdDictionary[report_no] * (typeRate * shokushuRate)
 
 
