@@ -80,8 +80,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     wordCount = {} # 類似単語の出現回数
     ldaDictionary = {} # 報告書ごとに入力とldaのtopic値を計算する
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
-    lda1 = {}
-    lda2 = {}
+    lda = {}
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
     for index in adDicts:
         wordDictionary[adDicts[index]["reportNo"]] = {}
@@ -97,8 +96,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             report_no = report["reportNo"]
             ldaDictionary[report_no] = sum(equation_lda_value * np.array(report['topic']))
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
-            cosSimilar[report_no] = np.dot(report['vectorSum'], inputVectorSum) / (report['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
-            if kensaku[0] not in report['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
+            cosSimilar[report_no] = np.dot(report['vectorSum'], inputVectorSum) / (report['vectorLength'] * inputVectorLength)
+            if kensaku[0] not in report['advice_divide_mecab']:
                 continue
             if det_check == "1":
                 if report['companyType'] not in company_type_name and report['companyShokushu'] not in company_shokushu_name:
@@ -107,16 +106,15 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if kensaku[0] in report['tfidf']:
                 rateCount.append([report_no, report["companyName"], report['tfidf'][kensaku[0]] * kensaku[1]])
             else:
-                rateCount.append([report_no, report["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
+                rateCount.append([report_no, report["companyName"], kensaku[1]])
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
+            lda[report_no] = [report['topic'][0], report['topic'][1]]
             wordCount[kensaku[0]] += 1
 
-    # 内積の計算でコサイン類似度がマイナスになることがあったので、正規化した
     cosSimilar = normalization(cosSimilar)
     ldaDictionary = normalization(ldaDictionary)
-    lda1[report_no] = adDicts[index]['topic'][0]
-    lda2[report_no] = adDicts[index]['topic'][1]
+
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
     jsdDictionary = calc.value_reverse(jsdDictionary)
@@ -152,8 +150,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': wordDictionary[primaryComp[0]],
                 'cos': round(cosSimilar[primaryComp[0]].astype(np.float64), DECIMAL_POINT),
-                'lda': round(ldaDictionary[primaryComp[0]].astype(np.float64), DECIMAL_POINT),
-                }
+                'lda1': lda[primaryComp[0]][0],
+                'lda2': lda[primaryComp[0]][1],
+            }
     # ワードクラウド用に類似単語の出現回数を取得してみる
     [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
     advice_json['word_count'] = sorted(wordCount.items(), key=lambda x:x[1], reverse=True)
