@@ -14,15 +14,7 @@ from replace import change_word
 from replace import decode_word
 from calc import Calc
 from addTopic import lda_value
-from const import PATH
-
-#定数の宣言
-similaryty = 0.50 # 類似度を設定する
-INPUTWEIGHT = 1.0 # 入力文字の重み（仮想的な類似度）
-WRITE = False # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
-TYPE = False
-############
-
+from const import *
 
 def min_max(x, min_x, max_x, axis=None):
     result = (x-min_x)/(max_x-min_x)
@@ -66,7 +58,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             result = model.most_similar(positive = po, negative = nega, topn = n)
             tmpWordCheck += '1,' + po + ','
             for r in result:
-                if r[1] > similaryty:
+                if r[1] > SIMILARYTY_LIMIT_RATE:
                     results.append(r)
                 else:
                     break;
