@@ -40,8 +40,6 @@ def is_exist_input_word(inputWord, model):
 
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
-    count = 0
-
     results = []
     inputVectorSum = 0 # 入力文字のベクトルの和を格納
     inputVectorLength = 0 # 入力文字のベクトル長を格納
@@ -59,7 +57,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             inputVectorSum += model[inputWord]
         except  Exception as e:
             pass
-        count += 1
     inputVectorLength = np.linalg.norm(inputVectorSum)
 
     words = {'positive': posi, 'negative': nega}
