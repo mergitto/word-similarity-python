@@ -115,9 +115,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
             if kensaku[0] in report['tfidf']:
-                rateCount.append([report_no, report["companyName"], report['tfidf'][kensaku[0]] * kensaku[1]])
+                similarity = report['tfidf'][kensaku[0]] * kensaku[1]
             else:
-                rateCount.append([report_no, report["companyName"], kensaku[1]])
+                similarity = kensaku[1]
+            rateCount.append([report_no, report["companyName"], similarity])
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
             lda[report_no] = [report['topic'][0], report['topic'][1]]
