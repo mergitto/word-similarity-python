@@ -91,24 +91,25 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         wordCount[kensaku[0]] = 0
         if not is_noun(kensaku[0]): continue
         for index in adDicts:
-            if len(adDicts[index]['advice_divide_mecab']) < LOWEST_WORD_LENGTH: continue
-            if adDicts[index]['advice'] == '': continue
-            report_no = adDicts[index]["reportNo"]
-            ldaDictionary[report_no] = sum(equation_lda_value * np.array(adDicts[index]['topic']))
-            jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(adDicts[index]['topic']))
-            cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
-            if kensaku[0] not in adDicts[index]['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
+            report = adDicts[index]
+            if len(report['advice_divide_mecab']) < LOWEST_WORD_LENGTH: continue
+            if report['advice'] == '': continue
+            report_no = report["reportNo"]
+            ldaDictionary[report_no] = sum(equation_lda_value * np.array(report['topic']))
+            jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
+            cosSimilar[report_no] = np.dot(report['vectorSum'], inputVectorSum) / (report['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
+            if kensaku[0] not in report['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
                 continue
             if det_check == "1":
-                if adDicts[index]['companyType'] not in company_type_name and adDicts[index]['companyShokushu'] not in company_shokushu_name:
+                if report['companyType'] not in company_type_name and report['companyShokushu'] not in company_shokushu_name:
                     continue
             wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
-            if kensaku[0] in adDicts[index]['tfidf']:
-                rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
+            if kensaku[0] in report['tfidf']:
+                rateCount.append([report_no, report["companyName"], report['tfidf'][kensaku[0]] * kensaku[1]])
             else:
-                rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
-            reportNoType[report_no] = adDicts[index]["companyType"]
-            reportNoShokushu[report_no] = adDicts[index]["companyShokushu"]
+                rateCount.append([report_no, report["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
+            reportNoType[report_no] = report["companyType"]
+            reportNoShokushu[report_no] = report["companyShokushu"]
             wordCount[kensaku[0]] += 1
 
     # 内積の計算でコサイン類似度がマイナスになることがあったので、正規化した
