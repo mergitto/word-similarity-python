@@ -23,13 +23,13 @@ def list_checked(report_company_type, input_company_type):
         rate = 1.2
     return rate
 
-def normalization(cosSimilar):
+def normalization(dictionary):
     calc = Calc()
-    list_cos = [cos for cos in cosSimilar.values()]
-    for key in cosSimilar:
-        current_cos = cosSimilar[key]
-        cosSimilar[key] = calc.normalization(current_cos, list_cos)
-    return cosSimilar
+    values = [value for value in dictionary.values()]
+    for key in dictionary:
+        current_values = dictionary[key]
+        dictionary[key] = calc.normalization(current_values, values)
+    return dictionary
 
 def is_exist_input_word(inputWord, model):
     try:
@@ -79,7 +79,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     adDicts = load_reports()
 
     rateCount = []
-    cosSimilar = {} # 入力と文書ごとのコサイン類似度を格納
     reportNoType = {} # 報告書Noと業種の辞書
     reportNoShokushu = {} # 報告書Noと職種の辞書
     wordDictionary = {} # 報告書ごとの類似単語辞書
@@ -100,7 +99,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if report['advice'] == '': continue
             report_no = report["reportNo"]
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
-            cosSimilar[report_no] = np.dot(report['vectorSum'], inputVectorSum) / (report['vectorLength'] * inputVectorLength)
             if kensaku[0] not in report['advice_divide_mecab']: continue
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
@@ -113,7 +111,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             lda[report_no] = [report['topic'][0], report['topic'][1]]
             wordCount[kensaku[0]] += 1
 
-    cosSimilar = normalization(cosSimilar)
 
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
@@ -138,7 +135,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
         simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
         simLog = simLog * 1.2
-        compRecommendDic[report_no] = simLog + cosSimilar[report_no] * jsdDictionary[report_no] * (typeRate * shokushuRate)
+        compRecommendDic[report_no] = simLog + jsdDictionary[report_no] * (typeRate * shokushuRate)
 
 
     advice_json = {}
@@ -149,7 +146,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': wordDictionary[report_no],
-                'cos': round(cosSimilar[report_no].astype(np.float64), DECIMAL_POINT),
                 'lda1': lda[report_no][0],
                 'lda2': lda[report_no][1],
             }
