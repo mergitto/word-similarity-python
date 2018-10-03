@@ -32,7 +32,6 @@ def normalization(cosSimilar):
     return cosSimilar
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
-    tmpWordCheck = ''
     count = 0
 
     results = []
@@ -52,7 +51,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     for index, po in enumerate(posi): # 入力文字から類似語を出力
         try:
             result = model.most_similar(positive = po, negative = nega, topn = n)
-            tmpWordCheck += '1,' + po + ','
             for r in result:
                 if r[1] > SIMILARYTY_LIMIT_RATE:
                     results.append(r)
@@ -61,7 +59,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             # 入力のベクトルの和
             inputVectorSum += model[po]
         except  Exception as e:
-            tmpWordCheck += '0,' + po + ','
+            pass
         count += 1
     inputVectorLength = np.linalg.norm(inputVectorSum)
 
