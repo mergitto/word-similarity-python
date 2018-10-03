@@ -84,7 +84,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     reportNoShokushu = {} # 報告書Noと職種の辞書
     wordDictionary = {} # 報告書ごとの類似単語辞書
     wordCount = {} # 類似単語の出現回数
-    ldaDictionary = {} # 報告書ごとに入力とldaのtopic値を計算する
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     lda = {}
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
@@ -100,7 +99,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if len(report['advice_divide_mecab']) < LOWEST_WORD_LENGTH: continue
             if report['advice'] == '': continue
             report_no = report["reportNo"]
-            ldaDictionary[report_no] = sum(equation_lda_value * np.array(report['topic']))
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
             cosSimilar[report_no] = np.dot(report['vectorSum'], inputVectorSum) / (report['vectorLength'] * inputVectorLength)
             if kensaku[0] not in report['advice_divide_mecab']: continue
@@ -116,7 +114,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             wordCount[kensaku[0]] += 1
 
     cosSimilar = normalization(cosSimilar)
-    ldaDictionary = normalization(ldaDictionary)
 
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
