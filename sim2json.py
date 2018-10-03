@@ -31,6 +31,14 @@ def normalization(cosSimilar):
         cosSimilar[key] = calc.normalization(current_cos, list_cos)
     return cosSimilar
 
+def is_exist_input_word(inputWord, model):
+    try:
+        model.most_similar(positive = inputWord, negative = [], topn = NEIGHBOR_WORDS)
+        return True
+    except  Exception as e:
+        return False
+
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     count = 0
 
@@ -38,16 +46,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     inputVectorSum = 0 # 入力文字のベクトルの和を格納
     inputVectorLength = 0 # 入力文字のベクトル長を格納
     posi = sorted(list(set(posi)), key=posi.index)
-    for inputWord in posi:
-        inputWord = change_word(inputWord)
+    for index, inputWord in enumerate(posi): # 入力文字から類似語を出力
         try:
-            model.most_similar(positive = inputWord, negative = nega, topn = n)
-        except  Exception as e:
-            continue
-        results.append((inputWord, INPUTWEIGHT))
-    for index, po in enumerate(posi): # 入力文字から類似語を出力
-        try:
-            inputWord = change_word(inputWord)
+            if is_exist_input_word(inputWord, model): results.append((inputWord, INPUTWEIGHT))
             result = model.most_similar(positive = inputWord, negative = nega, topn = n)
             for r in result:
                 if r[1] > SIMILARYTY_LIMIT_RATE:
@@ -171,6 +172,7 @@ model = word2vec.Word2Vec.load(sys.argv[1])
 
 if __name__=="__main__":
     equation = sys.argv[2]
+    equation = change_word(equation)
     company_type_name = sys.argv[3].split()
     company_shokushu_name = sys.argv[4].split()
     det_check = sys.argv[5]
