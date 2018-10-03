@@ -48,17 +48,14 @@ def high_similar_words(result, results):
 
 def get_similar_words(inputWord):
     results = []
-    inputVectorSum = 0 # 入力文字のベクトルの和を格納
     for index, word in enumerate(inputWord): # 入力文字から類似語を出力
         try:
             if is_exist_input_word(word, model): results.append((word, INPUTWEIGHT))
             result = model.most_similar(positive = word, negative = [], topn = NEIGHBOR_WORDS)
             results = high_similar_words(result, results)
-            # 入力のベクトルの和
-            inputVectorSum += model[word]
         except  Exception as e:
             pass
-    return results, inputVectorSum
+    return results
 
 def load_reports():
     with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
@@ -85,8 +82,7 @@ def calcSimLog(simSum):
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
-    results, inputVectorSum = get_similar_words(posi)
-    inputVectorLength = np.linalg.norm(inputVectorSum) # 入力文字のベクトル長を格納
+    results = get_similar_words(posi)
 
     adDicts = load_reports()
 
