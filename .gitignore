@@ -9,3 +9,4 @@
 /data/*
 /doc2vec/prototype.model
 /tfidf/*.pickle
+/verification/*.txt
