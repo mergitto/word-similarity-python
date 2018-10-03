@@ -121,7 +121,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             rateCount.append([report_no, report["companyName"], similarity])
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
-            lda[report_no] = [report['topic'][0], report['topic'][1]]
+            lda[report_no] = report['topic']
             wordCount[kensaku[0]] += 1
 
 
