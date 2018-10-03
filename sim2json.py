@@ -119,15 +119,14 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     jsdDictionary = normalization(jsdDictionary)
     jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    reportDict = {} # 類似語を含むアドバイスの類似度をreport_no毎に足し算する
     # 同じ企業名で類似度を合計する
     fno1Comp = collections.Counter([comp[0] for comp in rateCount])
-    rateCountNp = np.array(rateCount)
 
-    compRecommendDic = {}
-    t = 0
+    rateCountNp = np.array(rateCount)
     reportNp = rateCountNp[:, [0]].reshape(-1,)
     rateCountNp = rateCountNp[:, [1, 2]]
+
+    compRecommendDic = {}
 
     for comp_no in fno1Comp:
         typeRate = list_checked(reportNoType[comp_no], company_type_name)
