@@ -89,14 +89,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     for kensaku in results:
         wordCount[kensaku[0]] = 0
-        if not is_noun(kensaku[0]):
-            continue
+        if not is_noun(kensaku[0]): continue
         for index in adDicts:
-            if len(adDicts[index]['advice_divide_mecab']) < LOWEST_WORD_LENGTH:
-                continue
-            if adDicts[index]['advice'] == '':
-                continue
-            #if adDicts[index]['advice_divide_mecab_space'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
+            if len(adDicts[index]['advice_divide_mecab']) < LOWEST_WORD_LENGTH: continue
+            if adDicts[index]['advice'] == '': continue
             report_no = adDicts[index]["reportNo"]
             ldaDictionary[report_no] = sum(equation_lda_value * np.array(adDicts[index]['topic']))
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(adDicts[index]['topic']))
