@@ -128,29 +128,30 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     compRecommendDic = {}
 
-    for comp_no in fno1Comp:
-        typeRate = list_checked(reportNoType[comp_no], company_type_name)
-        shokushuRate = list_checked(reportNoShokushu[comp_no], company_shokushu_name)
-        similarSum = rateCountNp[np.where(reportNp == str(comp_no))]
+    for report_no in fno1Comp:
+        typeRate = list_checked(reportNoType[report_no], company_type_name)
+        shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
+        similarSum = rateCountNp[np.where(reportNp == str(report_no))]
         if len(similarSum) == 0:
             similarSum = 0
         else:
             simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
         simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
         simLog = simLog * 1.2
-        compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * jsdDictionary[comp_no] * (typeRate * shokushuRate)
+        compRecommendDic[report_no] = simLog + cosSimilar[report_no] * jsdDictionary[report_no] * (typeRate * shokushuRate)
 
 
     advice_json = {}
     for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:DISPLAY_REPORTS_NUM]):
         ranking = index + 1
+        report_no = primaryComp[0]
         advice_json[str(ranking)] = {
-                'report_no': primaryComp[0],
+                'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
-                'words': wordDictionary[primaryComp[0]],
-                'cos': round(cosSimilar[primaryComp[0]].astype(np.float64), DECIMAL_POINT),
-                'lda1': lda[primaryComp[0]][0],
-                'lda2': lda[primaryComp[0]][1],
+                'words': wordDictionary[report_no],
+                'cos': round(cosSimilar[report_no].astype(np.float64), DECIMAL_POINT),
+                'lda1': lda[report_no][0],
+                'lda2': lda[report_no][1],
             }
     # ワードクラウド用に類似単語の出現回数を取得してみる
     [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
