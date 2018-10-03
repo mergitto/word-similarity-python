@@ -16,10 +16,6 @@ from calc import Calc
 from addTopic import lda_value
 from const import *
 
-def min_max(x, min_x, max_x, axis=None):
-    result = (x-min_x)/(max_x-min_x)
-    return result
-
 def list_checked(report_company_type, input_company_type):
     if report_company_type not in input_company_type or input_company_type == None:
         rate = 1
