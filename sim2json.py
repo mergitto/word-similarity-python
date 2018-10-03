@@ -38,7 +38,7 @@ def is_exist_input_word(inputWord, model):
     except  Exception as e:
         return False
 
-def get_similar_words(result, results):
+def high_similar_words(result, results):
     for r in result:
         if r[1] > SIMILARYTY_LIMIT_RATE:
             results.append(r)
@@ -46,19 +46,23 @@ def get_similar_words(result, results):
             continue;
     return results
 
-def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
+def get_similar_words(inputWord):
     results = []
     inputVectorSum = 0 # 入力文字のベクトルの和を格納
-    posi = sorted(list(set(posi)), key=posi.index)
-    for index, inputWord in enumerate(posi): # 入力文字から類似語を出力
+    for index, word in enumerate(inputWord): # 入力文字から類似語を出力
         try:
-            if is_exist_input_word(inputWord, model): results.append((inputWord, INPUTWEIGHT))
-            result = model.most_similar(positive = inputWord, negative = nega, topn = n)
-            results = get_similar_words(result, results)
+            if is_exist_input_word(word, model): results.append((word, INPUTWEIGHT))
+            result = model.most_similar(positive = word, negative = [], topn = NEIGHBOR_WORDS)
+            results = high_similar_words(result, results)
             # 入力のベクトルの和
-            inputVectorSum += model[inputWord]
+            inputVectorSum += model[word]
         except  Exception as e:
             pass
+    return results, inputVectorSum
+
+def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
+    posi = sorted(list(set(posi)), key=posi.index)
+    results, inputVectorSum = get_similar_words(posi)
     inputVectorLength = np.linalg.norm(inputVectorSum) # 入力文字のベクトル長を格納
 
     # adDictsのpickleをロードする
