@@ -65,6 +65,12 @@ def load_reports():
         adDicts = pickle.load(f)
     return adDicts
 
+def is_not_match_report(company_type, company_shokushu):
+    if det_check == "1":
+        if company_type not in company_type_name and company_shokushu not in company_shokushu_name:
+            return True
+    return False
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results, inputVectorSum = get_similar_words(posi)
@@ -97,11 +103,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             ldaDictionary[report_no] = sum(equation_lda_value * np.array(report['topic']))
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
             cosSimilar[report_no] = np.dot(report['vectorSum'], inputVectorSum) / (report['vectorLength'] * inputVectorLength)
-            if kensaku[0] not in report['advice_divide_mecab']:
-                continue
-            if det_check == "1":
-                if report['companyType'] not in company_type_name and report['companyShokushu'] not in company_shokushu_name:
-                    continue
+            if kensaku[0] not in report['advice_divide_mecab']: continue
+            if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
             if kensaku[0] in report['tfidf']:
                 rateCount.append([report_no, report["companyName"], report['tfidf'][kensaku[0]] * kensaku[1]])
