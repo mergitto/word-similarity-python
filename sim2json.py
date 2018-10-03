@@ -108,7 +108,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         for index in adDicts:
             report = adDicts[index]
             if is_few_words(report['advice_divide_mecab']): continue
-            if report['advice'] == '': continue
+            if not report['advice']: continue
             report_no = report["reportNo"]
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
             if kensaku[0] not in report['advice_divide_mecab']: continue
