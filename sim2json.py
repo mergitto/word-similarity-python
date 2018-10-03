@@ -60,14 +60,18 @@ def get_similar_words(inputWord):
             pass
     return results, inputVectorSum
 
+def load_reports():
+    with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
+        adDicts = pickle.load(f)
+    return adDicts
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results, inputVectorSum = get_similar_words(posi)
     inputVectorLength = np.linalg.norm(inputVectorSum) # 入力文字のベクトル長を格納
 
-    # adDictsのpickleをロードする
-    with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
-        adDicts = pickle.load(f)
+    adDicts = load_reports()
+
     rateCount = []
     cosSimilar = {} # 入力と文書ごとのコサイン類似度を格納
     reportNoType = {} # 報告書Noと業種の辞書
