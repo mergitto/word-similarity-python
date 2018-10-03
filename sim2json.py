@@ -47,14 +47,15 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         results.append((inputWord, INPUTWEIGHT))
     for index, po in enumerate(posi): # 入力文字から類似語を出力
         try:
-            result = model.most_similar(positive = po, negative = nega, topn = n)
+            inputWord = change_word(inputWord)
+            result = model.most_similar(positive = inputWord, negative = nega, topn = n)
             for r in result:
                 if r[1] > SIMILARYTY_LIMIT_RATE:
                     results.append(r)
                 else:
                     break;
             # 入力のベクトルの和
-            inputVectorSum += model[po]
+            inputVectorSum += model[inputWord]
         except  Exception as e:
             pass
         count += 1
