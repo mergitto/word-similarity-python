@@ -35,7 +35,7 @@ def normalization(cosSimilar):
         cosSimilar[key] = calc.normalization(current_cos, list_cos)
     return cosSimilar
 
-def neighbor_word(posi, nega=[], n=300, inputText = None):
+def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     tmpWordCheck = ''
     count = 0
 
@@ -94,7 +94,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
         if not is_noun(kensaku[0]):
             continue
         for index in adDicts:
-            if len(adDicts[index]['advice_divide_mecab']) < 10:
+            if len(adDicts[index]['advice_divide_mecab']) < LOWEST_WORD_LENGTH:
                 continue
             if adDicts[index]['advice'] == '':
                 continue
@@ -150,14 +150,14 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
 
 
     advice_json = {}
-    for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:100]):
+    for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:DISPLAY_REPORTS_NUM]):
         ranking = index + 1
         advice_json[str(ranking)] = {
                 'report_no': primaryComp[0],
-                'recommend_level': str(round(primaryComp[1], 3)),
+                'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': wordDictionary[primaryComp[0]],
-                'cos': round(cosSimilar[primaryComp[0]].astype(np.float64), 3),
-                'lda': round(ldaDictionary[primaryComp[0]].astype(np.float64), 3),
+                'cos': round(cosSimilar[primaryComp[0]].astype(np.float64), DECIMAL_POINT),
+                'lda': round(ldaDictionary[primaryComp[0]].astype(np.float64), DECIMAL_POINT),
                 }
     # ワードクラウド用に類似単語の出現回数を取得してみる
     [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
