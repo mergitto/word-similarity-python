@@ -49,7 +49,6 @@ def get_similar_words(result, results):
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     results = []
     inputVectorSum = 0 # 入力文字のベクトルの和を格納
-    inputVectorLength = 0 # 入力文字のベクトル長を格納
     posi = sorted(list(set(posi)), key=posi.index)
     for index, inputWord in enumerate(posi): # 入力文字から類似語を出力
         try:
@@ -60,14 +59,13 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             inputVectorSum += model[inputWord]
         except  Exception as e:
             pass
-    inputVectorLength = np.linalg.norm(inputVectorSum)
+    inputVectorLength = np.linalg.norm(inputVectorSum) # 入力文字のベクトル長を格納
 
     words = {'positive': posi, 'negative': nega}
     # adDictsのpickleをロードする
     with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
         adDicts = pickle.load(f)
     rateCount = []
-    topicDic = {} # 入力と文書ごとのトピック積和を格納
     cosSimilar = {} # 入力と文書ごとのコサイン類似度を格納
     reportNoType = {} # 報告書Noと業種の辞書
     reportNoShokushu = {} # 報告書Noと職種の辞書
