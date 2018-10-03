@@ -37,17 +37,14 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     results = []
     inputVectorSum = 0 # 入力文字のベクトルの和を格納
     inputVectorLength = 0 # 入力文字のベクトル長を格納
-    resultWord = [] # 入力文字の中でword2vecによって学習されている単語を格納する
     posi = sorted(list(set(posi)), key=posi.index)
     for inputWord in posi:
         inputWord = change_word(inputWord)
         try:
             model.most_similar(positive = inputWord, negative = nega, topn = n)
-            resultWord.append(inputWord)
         except  Exception as e:
             continue
         results.append((inputWord, INPUTWEIGHT))
-    posi = resultWord
     for index, po in enumerate(posi): # 入力文字から類似語を出力
         try:
             result = model.most_similar(positive = po, negative = nega, topn = n)
