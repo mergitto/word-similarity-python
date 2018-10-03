@@ -115,7 +115,7 @@ def loadLda(text=None):
 
 
 mc = MeCab('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
-TOPICNUM = 10 # 学習したトピック数
+TOPICNUM = 2 # 学習したトピック数
 train = False # True = 学習を行う False = 訓練したデータをロードして結果を表示する
 
 model   = word2vec.Word2Vec.load(sys.argv[1]) # 文書ごとにベクトルの和を求めるためにword2vecモジュールを読み込み
