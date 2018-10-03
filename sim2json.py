@@ -14,24 +14,15 @@ from replace import change_word
 from replace import decode_word
 from calc import Calc
 from addTopic import lda_value
+from const import PATH
 
 #定数の宣言
 similaryty = 0.50 # 類似度を設定する
 INPUTWEIGHT = 1.0 # 入力文字の重み（仮想的な類似度）
-PRIORITYRATE = 5 # 重要単語を選択した時に付加する類似語の類似度の倍率
-LOWPRIORITYRATE = 0.5 # 非重要単語を選択した時に付加する類似語の類似度の倍率
 WRITE = False # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
-WEIGHTING = True # 入力文字のから重要単語を選択する場合はTrue,しない場合はFalse
 TYPE = False
 ############
 
-model = word2vec.Word2Vec.load(sys.argv[1])
-
-# bizreachのモデルを利用する場合は以下のコメントアウトを削除する
-#from gensim.models import KeyedVectors
-#MODEL_FILENAME = "/var/www/cgi-bin/word-similarity-python/model/bizreach.model"
-#model = KeyedVectors.load_word2vec_format(MODEL_FILENAME, binary=True)
-# LDAによるトピック分類を利用した推薦のためのモデル読み込み
 
 def min_max(x, min_x, max_x, axis=None):
     result = (x-min_x)/(max_x-min_x)
@@ -76,13 +67,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             tmpWordCheck += '1,' + po + ','
             for r in result:
                 if r[1] > similaryty:
-                    if WEIGHTING == True and not ALGORITHMTYPE == 0:
-                        results.append(r)
-                    else:
-                        if index == int(weightingFlag): # 入力の中で重要であると利用者が判断した単語の類似語の類似度を少し増やす
-                            results.append((r[0], r[1] * PRIORITYRATE))
-                        else:
-                            results.append((r[0], r[1] * LOWPRIORITYRATE))
+                    results.append(r)
                 else:
                     break;
             # 入力のベクトルの和
@@ -94,7 +79,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
 
     words = {'positive': posi, 'negative': nega}
     # adDictsのpickleをロードする
-    with open('/var/www/cgi-bin/word-similarity-python/tfidf/advice_10_tfidf.pickle', 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
+    with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
         adDicts = pickle.load(f)
     rateCount = []
     topicDic = {} # 入力と文書ごとのトピック積和を格納
@@ -104,9 +89,11 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     wordDictionary = {} # 報告書ごとの類似単語辞書
     wordCount = {} # 類似単語の出現回数
     ldaDictionary = {} # 報告書ごとに入力とldaのtopic値を計算する
+    jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
     for index in adDicts:
         wordDictionary[adDicts[index]["reportNo"]] = {}
+    calc = Calc()
 
     for kensaku in results:
         wordCount[kensaku[0]] = 0
@@ -120,6 +107,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             #if adDicts[index]['advice_divide_mecab_space'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
             report_no = adDicts[index]["reportNo"]
             ldaDictionary[report_no] = sum(equation_lda_value * np.array(adDicts[index]['topic']))
+            jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(adDicts[index]['topic']))
             cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
             if kensaku[0] not in adDicts[index]['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
                 continue
@@ -135,6 +123,9 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     # 内積の計算でコサイン類似度がマイナスになることがあったので、正規化した
     cosSimilar = normalization(cosSimilar)
     ldaDictionary = normalization(ldaDictionary)
+    # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
+    jsdDictionary = normalization(jsdDictionary)
+    jsdDictionary = calc.value_reverse(jsdDictionary)
 
     reportDict = {} # 類似語を含むアドバイスの類似度をreport_no毎に足し算する
     # 同じ企業名で類似度を合計する
@@ -154,25 +145,8 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             similarSum = 0
         else:
             simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
-        simLog = 0.0001 if math.log(simSum, 10) <= 0 else math.log(simSum, 10)
-        if ALGORITHMTYPE == 0:
-            # type0: 類似語の合計 * 業種（メタ情報） * コサイン類似度
-            compRecommendDic[comp_no] = simSum * typeRate * cosSimilar[comp_no]
-        elif ALGORITHMTYPE == 1:
-            # type1: log(類似語の合計) * 業種（メタ情報） * 職種（メタ情報）* コサイン類似度
-            #compRecommendDic[comp_no] = simLog * typeRate * shokushuRate * cosSimilar[comp_no]
-
-            # 2018-06-07 type1:         log(sum(similarity)) + コサイン類似度 *（メタ情報）
-            #compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * (typeRate * shokushuRate)
-
-            # 2018-06-12 type2:         log(sum(similarity)) + lda *（メタ情報）
-            #compRecommendDic[comp_no] = simLog + ldaDictionary[comp_no] * (typeRate * shokushuRate)
-
-            # 2018-06-15 type3:         log(sum(similarity)) + コサイン類似度 * lda（メタ情報）
-            compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * ldaDictionary[comp_no] * (typeRate * shokushuRate)
-        elif ALGORITHMTYPE == 2:
-            # type2: log(類似語の合計) + 業種（メタ情報） + コサイン類似度
-            compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
+        simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
+        compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * jsdDictionary[comp_no] * (typeRate * shokushuRate)
 
 
     advice_json = {}
@@ -200,8 +174,10 @@ def calc(equation):
     words = parser_mecab(equation)
     return neighbor_word(words, inputText=equation)
 
+
+model = word2vec.Word2Vec.load(sys.argv[1])
+
 if __name__=="__main__":
-    ALGORITHMTYPE = 1
     equation = sys.argv[2]
     company_type_name = sys.argv[3].split()
     company_shokushu_name = sys.argv[4].split()
