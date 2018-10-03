@@ -90,6 +90,8 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     wordCount = {} # 類似単語の出現回数
     ldaDictionary = {} # 報告書ごとに入力とldaのtopic値を計算する
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
+    lda1 = {}
+    lda2 = {}
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
     for index in adDicts:
         wordDictionary[adDicts[index]["reportNo"]] = {}
@@ -111,6 +113,9 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
             if kensaku[0] not in adDicts[index]['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
                 continue
+            if det_check == "1":
+                if adDicts[index]['companyType'] not in company_type_name and adDicts[index]['companyShokushu'] not in company_shokushu_name:
+                    continue
             wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
             if kensaku[0] in adDicts[index]['tfidf']:
                 rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
@@ -123,6 +128,8 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
     # 内積の計算でコサイン類似度がマイナスになることがあったので、正規化した
     cosSimilar = normalization(cosSimilar)
     ldaDictionary = normalization(ldaDictionary)
+    lda1[report_no] = adDicts[index]['topic'][0]
+    lda2[report_no] = adDicts[index]['topic'][1]
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
     jsdDictionary = calc.value_reverse(jsdDictionary)
@@ -146,6 +153,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
         else:
             simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
         simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
+        simLog = simLog * 1.2
         compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * jsdDictionary[comp_no] * (typeRate * shokushuRate)
 
 
@@ -181,6 +189,7 @@ if __name__=="__main__":
     equation = sys.argv[2]
     company_type_name = sys.argv[3].split()
     company_shokushu_name = sys.argv[4].split()
+    det_check = sys.argv[5]
     similarReports = calc(equation)
     print(similarReports)
 
