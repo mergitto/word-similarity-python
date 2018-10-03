@@ -38,6 +38,13 @@ def is_exist_input_word(inputWord, model):
     except  Exception as e:
         return False
 
+def get_similar_words(result, results):
+    for r in result:
+        if r[1] > SIMILARYTY_LIMIT_RATE:
+            results.append(r)
+        else:
+            continue;
+    return results
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     results = []
@@ -48,11 +55,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         try:
             if is_exist_input_word(inputWord, model): results.append((inputWord, INPUTWEIGHT))
             result = model.most_similar(positive = inputWord, negative = nega, topn = n)
-            for r in result:
-                if r[1] > SIMILARYTY_LIMIT_RATE:
-                    results.append(r)
-                else:
-                    break;
+            results = get_similar_words(result, results)
             # 入力のベクトルの和
             inputVectorSum += model[inputWord]
         except  Exception as e:
