@@ -14,19 +14,7 @@ from replace import change_word
 from replace import decode_word
 from calc import Calc
 from addTopic import lda_value
-from const import PATH
-
-#定数の宣言
-similaryty = 0.50 # 類似度を設定する
-INPUTWEIGHT = 1.0 # 入力文字の重み（仮想的な類似度）
-WRITE = False # 入力内容を書き込むか否か Trueなら書き込み、Falseなら書き込まない
-TYPE = False
-############
-
-
-def min_max(x, min_x, max_x, axis=None):
-    result = (x-min_x)/(max_x-min_x)
-    return result
+from const import *
 
 def list_checked(report_company_type, input_company_type):
     if report_company_type not in input_company_type or input_company_type == None:
@@ -35,140 +23,144 @@ def list_checked(report_company_type, input_company_type):
         rate = 1.2
     return rate
 
-def normalization(cosSimilar):
+def normalization(dictionary):
     calc = Calc()
-    list_cos = [cos for cos in cosSimilar.values()]
-    for key in cosSimilar:
-        current_cos = cosSimilar[key]
-        cosSimilar[key] = calc.normalization(current_cos, list_cos)
-    return cosSimilar
+    values = [value for value in dictionary.values()]
+    for key in dictionary:
+        current_values = dictionary[key]
+        dictionary[key] = calc.normalization(current_values, values)
+    return dictionary
 
-def neighbor_word(posi, nega=[], n=300, inputText = None):
-    tmpWordCheck = ''
-    count = 0
+def is_exist_input_word(inputWord, model):
+    try:
+        model.most_similar(positive = inputWord, negative = [], topn = NEIGHBOR_WORDS)
+        return True
+    except  Exception as e:
+        return False
 
+def high_similar_words(result, results):
+    for r in result:
+        if r[1] > SIMILARYTY_LIMIT_RATE:
+            results.append(r)
+        else:
+            continue;
+    return results
+
+def get_similar_words(inputWord):
     results = []
-    inputVectorSum = 0 # 入力文字のベクトルの和を格納
-    inputVectorLength = 0 # 入力文字のベクトル長を格納
-    resultWord = [] # 入力文字の中でword2vecによって学習されている単語を格納する
-    posi = sorted(list(set(posi)), key=posi.index)
-    for inputWord in posi:
-        inputWord = change_word(inputWord)
+    for index, word in enumerate(inputWord): # 入力文字から類似語を出力
         try:
-            model.most_similar(positive = inputWord, negative = nega, topn = n)
-            resultWord.append(inputWord)
+            if is_exist_input_word(word, model): results.append((word, INPUTWEIGHT))
+            result = model.most_similar(positive = word, negative = [], topn = NEIGHBOR_WORDS)
+            results = high_similar_words(result, results)
         except  Exception as e:
-            continue
-        results.append((inputWord, INPUTWEIGHT))
-    posi = resultWord
-    for index, po in enumerate(posi): # 入力文字から類似語を出力
-        try:
-            result = model.most_similar(positive = po, negative = nega, topn = n)
-            tmpWordCheck += '1,' + po + ','
-            for r in result:
-                if r[1] > similaryty:
-                    results.append(r)
-                else:
-                    break;
-            # 入力のベクトルの和
-            inputVectorSum += model[po]
-        except  Exception as e:
-            tmpWordCheck += '0,' + po + ','
-        count += 1
-    inputVectorLength = np.linalg.norm(inputVectorSum)
+            pass
+    return results
 
-    words = {'positive': posi, 'negative': nega}
-    # adDictsのpickleをロードする
+def load_reports():
     with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
         adDicts = pickle.load(f)
+    return adDicts
+
+def is_not_match_report(company_type, company_shokushu):
+    if det_check == "1":
+        if company_type not in company_type_name and company_shokushu not in company_shokushu_name:
+            return True
+    return False
+
+def calcSimSum(similarSumary):
+    if len(similarSumary) == 0:
+        simSum = 0
+    else:
+        simSum = np.sum(similarSumary[:,1].reshape(-1,).astype(np.float64))
+    return simSum
+
+def calcSimLog(simSum):
+    simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
+    return simLog * 1.2
+
+def is_few_words(parse_text):
+    if len(parse_text) < LOWEST_WORD_LENGTH:
+        return True
+    return False
+
+def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
+    posi = sorted(list(set(posi)), key=posi.index)
+    results = get_similar_words(posi)
+
     rateCount = []
-    topicDic = {} # 入力と文書ごとのトピック積和を格納
-    cosSimilar = {} # 入力と文書ごとのコサイン類似度を格納
     reportNoType = {} # 報告書Noと業種の辞書
     reportNoShokushu = {} # 報告書Noと職種の辞書
     wordDictionary = {} # 報告書ごとの類似単語辞書
     wordCount = {} # 類似単語の出現回数
-    ldaDictionary = {} # 報告書ごとに入力とldaのtopic値を計算する
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
-    lda1 = {}
-    lda2 = {}
+    lda = {}
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
+
+    adDicts = load_reports()
     for index in adDicts:
         wordDictionary[adDicts[index]["reportNo"]] = {}
     calc = Calc()
 
-    for kensaku in results:
-        wordCount[kensaku[0]] = 0
-        if not is_noun(kensaku[0]):
-            continue
+    for word_and_similarity in results:
+        similarWord = word_and_similarity[0]
+        cosineSimilarity = word_and_similarity[1]
+        wordCount[similarWord] = 0
+        if not is_noun(similarWord): continue
         for index in adDicts:
-            if len(adDicts[index]['advice_divide_mecab']) < 10:
-                continue
-            if adDicts[index]['advice'] == '':
-                continue
-            #if adDicts[index]['advice_divide_mecab_space'].find(kensaku[0]) == -1: # adviceに類似度の高い単語が含まれている場合
-            report_no = adDicts[index]["reportNo"]
-            ldaDictionary[report_no] = sum(equation_lda_value * np.array(adDicts[index]['topic']))
-            jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(adDicts[index]['topic']))
-            cosSimilar[report_no] = np.dot(adDicts[index]['vectorSum'], inputVectorSum) / (adDicts[index]['vectorLength'] * inputVectorLength) # 入力の文章と各文書ごとにコサイン類似度を計算
-            if kensaku[0] not in adDicts[index]['advice_divide_mecab']: # adviceに類似度の高い単語が含まれている場合
-                continue
-            if det_check == "1":
-                if adDicts[index]['companyType'] not in company_type_name and adDicts[index]['companyShokushu'] not in company_shokushu_name:
-                    continue
-            wordDictionary[report_no].update({decode_word(kensaku[0]): kensaku[1]})
-            if kensaku[0] in adDicts[index]['tfidf']:
-                rateCount.append([report_no, adDicts[index]["companyName"], adDicts[index]['tfidf'][kensaku[0]] * kensaku[1]])
+            report = adDicts[index]
+            if is_few_words(report['advice_divide_mecab']): continue
+            if not report['advice']: continue
+            report_no = report["reportNo"]
+            jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
+            if similarWord not in report['advice_divide_mecab']: continue
+            if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
+            wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
+            if similarWord in report['tfidf']:
+                similarity = report['tfidf'][similarWord] * cosineSimilarity
             else:
-                rateCount.append([report_no, adDicts[index]["companyName"], kensaku[1]]) # 類似度を用いて推薦機能を実装するための配列
-            reportNoType[report_no] = adDicts[index]["companyType"]
-            reportNoShokushu[report_no] = adDicts[index]["companyShokushu"]
-            wordCount[kensaku[0]] += 1
+                similarity = cosineSimilarity
+            rateCount.append([report_no, report["companyName"], similarity])
+            reportNoType[report_no] = report["companyType"]
+            reportNoShokushu[report_no] = report["companyShokushu"]
+            lda[report_no] = report['topic']
+            wordCount[similarWord] += 1
 
-    # 内積の計算でコサイン類似度がマイナスになることがあったので、正規化した
-    cosSimilar = normalization(cosSimilar)
-    ldaDictionary = normalization(ldaDictionary)
-    lda1[report_no] = adDicts[index]['topic'][0]
-    lda2[report_no] = adDicts[index]['topic'][1]
+    [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
+
+
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
     jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    reportDict = {} # 類似語を含むアドバイスの類似度をreport_no毎に足し算する
     # 同じ企業名で類似度を合計する
     fno1Comp = collections.Counter([comp[0] for comp in rateCount])
+
     rateCountNp = np.array(rateCount)
+    reportNp = rateCountNp[:, [0]].reshape(-1,)
+    nameSimilarityNp = rateCountNp[:, [1, 2]]
 
     compRecommendDic = {}
-    t = 0
-    reportNp = rateCountNp[:, [0]].reshape(-1,)
-    rateCountNp = rateCountNp[:, [1, 2]]
 
-    for comp_no in fno1Comp:
-        typeRate = list_checked(reportNoType[comp_no], company_type_name)
-        shokushuRate = list_checked(reportNoShokushu[comp_no], company_shokushu_name)
-        similarSum = rateCountNp[np.where(reportNp == str(comp_no))]
-        if len(similarSum) == 0:
-            similarSum = 0
-        else:
-            simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
-        simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
-        simLog = simLog * 1.2
-        compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * jsdDictionary[comp_no] * (typeRate * shokushuRate)
+    for report_no in fno1Comp:
+        typeRate = list_checked(reportNoType[report_no], company_type_name)
+        shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
+        similarSum = nameSimilarityNp[np.where(reportNp == str(report_no))]
+        simSum = calcSimSum(similarSum)
+        simLog = calcSimLog(simSum)
+        compRecommendDic[report_no] = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
 
-
+    sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
     advice_json = {}
-    for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:100]):
-        ranking = index + 1
+    for ranking, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM], start=1):
+        report_no = primaryComp[0]
         advice_json[str(ranking)] = {
-                'report_no': primaryComp[0],
-                'recommend_level': str(round(primaryComp[1], 3)),
-                'words': wordDictionary[primaryComp[0]],
-                'cos': round(cosSimilar[primaryComp[0]].astype(np.float64), 3),
-                'lda': round(ldaDictionary[primaryComp[0]].astype(np.float64), 3),
-                }
-    # ワードクラウド用に類似単語の出現回数を取得してみる
-    [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
+                'report_no': report_no,
+                'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
+                'words': wordDictionary[report_no],
+                'lda1': round(lda[report_no][0], DECIMAL_POINT),
+                'lda2': round(lda[report_no][1], DECIMAL_POINT),
+            }
     advice_json['word_count'] = sorted(wordCount.items(), key=lambda x:x[1], reverse=True)
     advice_json['company_type'] = company_type_name
     advice_json['company_shokushu'] = company_shokushu_name
@@ -184,12 +176,12 @@ def calc(equation):
 
 
 model = word2vec.Word2Vec.load(sys.argv[1])
+equation = change_word(sys.argv[2])
+company_type_name = sys.argv[3].split()
+company_shokushu_name = sys.argv[4].split()
+det_check = sys.argv[5]
 
 if __name__=="__main__":
-    equation = sys.argv[2]
-    company_type_name = sys.argv[3].split()
-    company_shokushu_name = sys.argv[4].split()
-    det_check = sys.argv[5]
     similarReports = calc(equation)
     print(similarReports)
 
