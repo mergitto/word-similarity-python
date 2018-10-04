@@ -102,9 +102,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         wordDictionary[adDicts[index]["reportNo"]] = {}
     calc = Calc()
 
-    for kensaku in results:
-        similarWord = kensaku[0]
-        cosineSimilarity = kensaku[1]
+    for word_and_similarity in results:
+        similarWord = word_and_similarity[0]
+        cosineSimilarity = word_and_similarity[1]
         wordCount[similarWord] = 0
         if not is_noun(similarWord): continue
         for index in adDicts:
