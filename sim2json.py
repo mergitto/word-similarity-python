@@ -126,6 +126,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             lda[report_no] = report['topic']
             wordCount[similarWord] += 1
 
+    [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
+
 
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
@@ -156,11 +158,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': wordDictionary[report_no],
-                'lda1': lda[report_no][0],
-                'lda2': lda[report_no][1],
+                'lda1': round(lda[report_no][0], DECIMAL_POINT),
+                'lda2': round(lda[report_no][1], DECIMAL_POINT),
             }
-    # ワードクラウド用に類似単語の出現回数を取得してみる
-    [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
     advice_json['word_count'] = sorted(wordCount.items(), key=lambda x:x[1], reverse=True)
     advice_json['company_type'] = company_type_name
     advice_json['company_shokushu'] = company_shokushu_name
