@@ -150,8 +150,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
     advice_json = {}
-    for index, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM]):
-        ranking = index + 1
+    for ranking, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM], start=1):
         report_no = primaryComp[0]
         advice_json[str(ranking)] = {
                 'report_no': report_no,
