@@ -176,12 +176,12 @@ def calc(equation):
 
 
 model = word2vec.Word2Vec.load(sys.argv[1])
+equation = change_word(sys.argv[2])
+company_type_name = sys.argv[3].split()
+company_shokushu_name = sys.argv[4].split()
+det_check = sys.argv[5]
 
 if __name__=="__main__":
-    equation = change_word(sys.argv[2])
-    company_type_name = sys.argv[3].split()
-    company_shokushu_name = sys.argv[4].split()
-    det_check = sys.argv[5]
     similarReports = calc(equation)
     print(similarReports)
 
