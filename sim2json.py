@@ -136,14 +136,14 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     rateCountNp = np.array(rateCount)
     reportNp = rateCountNp[:, [0]].reshape(-1,)
-    rateCountNp = rateCountNp[:, [1, 2]]
+    nameSimilarityNp = rateCountNp[:, [1, 2]]
 
     compRecommendDic = {}
 
     for report_no in fno1Comp:
         typeRate = list_checked(reportNoType[report_no], company_type_name)
         shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
-        similarSum = rateCountNp[np.where(reportNp == str(report_no))]
+        similarSum = nameSimilarityNp[np.where(reportNp == str(report_no))]
         simSum = calcSimSum(similarSum)
         simLog = calcSimLog(simSum)
         compRecommendDic[report_no] = simLog + jsdDictionary[report_no] * (typeRate * shokushuRate)
