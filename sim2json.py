@@ -148,9 +148,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         simLog = calcSimLog(simSum)
         compRecommendDic[report_no] = simLog + jsdDictionary[report_no] * (typeRate * shokushuRate)
 
-
+    sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
     advice_json = {}
-    for index, primaryComp in enumerate(sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)[:DISPLAY_REPORTS_NUM]):
+    for index, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM]):
         ranking = index + 1
         report_no = primaryComp[0]
         advice_json[str(ranking)] = {
