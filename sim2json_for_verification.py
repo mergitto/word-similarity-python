@@ -70,7 +70,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
             tmpWordCheck += '1,' + po + ','
             for r in result:
                 if r[1] > similaryty:
-                    if WEIGHTING == True and not ALGORITHMTYPE == 0:
+                    if WEIGHTING == True:
                         results.append(r)
                     else:
                         if index == int(weightingFlag): # 入力の中で重要であると利用者が判断した単語の類似語の類似度を少し増やす
@@ -159,27 +159,7 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
         else:
             simSum = np.sum(similarSum[:,1].reshape(-1,).astype(np.float64))
         simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
-        if ALGORITHMTYPE == 0:
-            # type0: 類似語の合計 * 業種（メタ情報） * コサイン類似度
-            compRecommendDic[comp_no] = simSum * typeRate * cosSimilar[comp_no]
-        elif ALGORITHMTYPE == 1:
-            # type1: log(類似語の合計) * 業種（メタ情報） * 職種（メタ情報）* コサイン類似度
-            #compRecommendDic[comp_no] = simLog * typeRate * shokushuRate * cosSimilar[comp_no]
-
-            # 2018-06-07 type1:         log(sum(similarity)) + コサイン類似度 *（メタ情報）
-            #compRecommendDic[comp_no] = simLog + cosSimilar[comp_no]# * (typeRate * shokushuRate)
-
-            # 2018-06-12 type2:         log(sum(similarity)) + lda *（メタ情報）
-            #compRecommendDic[comp_no] = simLog + ldaDictionary[comp_no]# * (typeRate * shokushuRate)
-
-            # 2018-06-15 type3:         log(sum(similarity)) + コサイン類似度 * lda（メタ情報）
-           # compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * ldaDictionary[comp_no]# * (typeRate * shokushuRate)
-
-            # 2018-06-15 type4:         log(sum(similarity)) + コサイン類似度 * jsd（メタ情報）
-            compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * jsdDictionary[comp_no]#simLog + cosSimilar[comp_no] * jsdDictionary[comp_no]# * (typeRate * shokushuRate)
-        elif ALGORITHMTYPE == 2:
-            # type2: log(類似語の合計) + 業種（メタ情報） + コサイン類似度
-            compRecommendDic[comp_no] = simLog + typeRate + cosSimilar[comp_no]
+        compRecommendDic[comp_no] = simLog + cosSimilar[comp_no] * jsdDictionary[comp_no]
 
 
     advice_json = {}
@@ -203,6 +183,8 @@ def neighbor_word(posi, nega=[], n=300, inputText = None):
 
 def write_txt(dictionary):
     high_count = 0
+    MODEL_FILE_NAME = "cpf_sum"
+    VERIFICATION_FILE = "./verification/%s_recommend.txt" % MODEL_FILE_NAME
     with open(VERIFICATION_FILE, mode="a") as f:
         f.write("[FORMAT]\n")
         f.write("rank(high_report_number):{value}\n")
@@ -223,18 +205,9 @@ def calc(equation):
 
 
 model = word2vec.Word2Vec.load(sys.argv[1])
-# bizreachのモデルを利用する場合は以下のコメントアウトを削除する
-#from gensim.models import KeyedVectors
-#MODEL_FILENAME = "./model/bizreach.model"
-#model = KeyedVectors.load_word2vec_format(sys.argv[1], binary=True)
-# LDAによるトピック分類を利用した推薦のためのモデル読み込み
-
 # 検証用のファイル
-MODEL_FILE_NAME = "tweet_cpf"
-VERIFICATION_FILE = "./verification/%s_recommend.txt" % MODEL_FILE_NAME
 
 if __name__=="__main__":
-    ALGORITHMTYPE = 1
     equation = sys.argv[2]
     company_type_name = sys.argv[3].split()
     company_shokushu_name = sys.argv[4].split()
