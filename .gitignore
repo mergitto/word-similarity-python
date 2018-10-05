@@ -10,3 +10,4 @@
 /doc2vec/prototype.model
 /tfidf/*.pickle
 /verification/*.txt
+/verification/*/*.txt
