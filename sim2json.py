@@ -84,6 +84,10 @@ def is_few_words(parse_text):
         return True
     return False
 
+def clean_sort_dictionary(dictionary):
+    [dictionary.pop(w[0]) for w in list(dictionary.items()) if w[1] == 0]
+    return sorted(dictionary.items(), key=lambda x:x[1], reverse=True)
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
@@ -126,8 +130,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             lda[report_no] = report['topic']
             wordCount[similarWord] += 1
 
-    [wordCount.pop(w[0]) for w in list(wordCount.items()) if w[1] == 0]
-
+    wordCount = clean_sort_dictionary(wordCount)
 
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
     jsdDictionary = normalization(jsdDictionary)
@@ -161,7 +164,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 'lda1': round(lda[report_no][0], DECIMAL_POINT),
                 'lda2': round(lda[report_no][1], DECIMAL_POINT),
             }
-    advice_json['word_count'] = sorted(wordCount.items(), key=lambda x:x[1], reverse=True)
+    advice_json['word_count'] = wordCount
     advice_json['company_type'] = company_type_name
     advice_json['company_shokushu'] = company_shokushu_name
     return json_dump(advice_json)
