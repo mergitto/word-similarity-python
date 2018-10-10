@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/local/pyenv/shims/python
 
-import gensim
 from gensim.models import word2vec
 import sys
 import collections
