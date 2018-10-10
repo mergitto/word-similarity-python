@@ -15,6 +15,7 @@ from replace import decode_word
 from calc import Calc
 from addTopic import lda_value
 from const import *
+from json_extend import json_dump
 
 def list_checked(report_company_type, input_company_type):
     if report_company_type not in input_company_type or input_company_type == None:
@@ -168,10 +169,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     advice_json['company_type'] = company_type_name
     advice_json['company_shokushu'] = company_shokushu_name
     return json_dump(advice_json)
-
-def json_dump(dictionary):
-    import json
-    return json.dumps(dictionary, sort_keys=True)
 
 def calc(equation):
     words = parser_mecab(equation)
