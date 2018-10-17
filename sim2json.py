@@ -117,8 +117,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if not report['advice']: continue
             report_no = report["reportNo"]
             jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
-            if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
-            wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
             if similarWord in report['tfidf']:
                 similarity = report['tfidf'][similarWord] * cosineSimilarity
             else:
@@ -127,6 +125,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
             lda[report_no] = report['topic']
+            if similarWord not in report['advice_divide_mecab']: continue
+            if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
+            wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
             wordCount[similarWord] += 1
 
     wordCount = clean_sort_dictionary(wordCount)
