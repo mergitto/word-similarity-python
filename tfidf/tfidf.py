@@ -47,20 +47,21 @@ def gensim_tfidf(advice):
         if index % 10 == 0:
             print("進捗度: ", str(round((index+1) / len(corpus) * 100, 2)), '%')
 
-        advice[index]['tfidf'] = {}
+        current_advice = advice[index]
+        current_advice['tfidf'] = {}
         tfidf_vector_sum = 0
         for one_corpus in corpus_of_each_text:
             tfidf_tuple = [ct for ct in corpus_tfidf[index] if ct[0] == one_corpus[0]][0]
             tfidf_word = dictionary[tfidf_tuple[0]]
             tfidf_value = tfidf_tuple[1]
-            advice[index]['tfidf'][tfidf_word] = tfidf_value
+            current_advice['tfidf'][tfidf_word] = tfidf_value
             tfidf_vector_sum += tfidf_value
 
         if greater_than_zero(corpus_of_each_text):
             tfidf_average = tfidf_vector_sum / len(corpus_of_each_text)
-            advice[index]['tfidf_average'] = tfidf_average
+            current_advice['tfidf_average'] = tfidf_average
         else:
-            advice[index]['tfidf_average'] = 0
+            current_advice['tfidf_average'] = 0
 
     return advice
 
