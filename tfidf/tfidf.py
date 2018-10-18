@@ -18,13 +18,16 @@ def counter(dictionary):
     texts = [[token for token in text if frequency[token] > 1] for text in texts]
     return frequency, texts
 
+def bag_of_word(dictionary, texts):
+    return [dictionary.doc2bow(text) for text in texts]
+
 def gensim_tfidf(advice):
     frequency, texts = counter(advice)
 
     # id:単語　の形
     dictionary = corpora.Dictionary(texts)
     # corpus[0]で0番目の文書のbag-of-wordを取得できる
-    corpus = [dictionary.doc2bow(text) for text in texts]
+    corpus = bag_of_word(dictionary, texts)
 
     from gensim import models
     tfidf = models.TfidfModel(corpus)#, normalize=False)
