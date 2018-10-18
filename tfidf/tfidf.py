@@ -31,8 +31,15 @@ def counter(dictionary):
 def bag_of_word(dictionary, texts):
     return [dictionary.doc2bow(text) for text in texts]
 
-def greater_than_zero(array):
-    return len(array) > 0
+def greater_than_zero(array_length):
+    return array_length > 0
+
+def tfidf_value_average(tfidf_sum, division_length):
+    if greater_than_zero(division_length):
+        tfidf_average = tfidf_sum / division_length
+    else:
+        tfidf_average = 0
+    return tfidf_average
 
 def gensim_tfidf(advice):
     frequency, texts = counter(advice)
@@ -58,11 +65,8 @@ def gensim_tfidf(advice):
             current_advice['tfidf'][tfidf_word] = tfidf_value
             tfidf_vector_sum += tfidf_value
 
-        if greater_than_zero(corpus_of_each_text):
-            tfidf_average = tfidf_vector_sum / len(corpus_of_each_text)
-            current_advice['tfidf_average'] = tfidf_average
-        else:
-            current_advice['tfidf_average'] = 0
+        corpus_length = len(corpus_of_each_text)
+        current_advice['tfidf_average'] = tfidf_value_average(tfidf_vector_sum, corpus_length)
 
     return advice
 
