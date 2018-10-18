@@ -10,7 +10,9 @@ def load_pickle():
 
 def load_tfidf_model(corpus):
     from gensim import models
-    return models.TfidfModel(corpus)
+    tfidf = models.TfidfModel(corpus)
+    corpus_tfidf = tfidf[corpus] # corpus_tfidf[0]で0番目の文書の単語のcorpusのtfidfを表示
+    return corpus_tfidf
 
 def counter(dictionary):
     texts = []
@@ -32,10 +34,8 @@ def gensim_tfidf(advice):
     dictionary = corpora.Dictionary(texts)
     # corpus[0]で0番目の文書のbag-of-wordを取得できる
     corpus = bag_of_word(dictionary, texts)
+    corpus_tfidf = load_tfidf_model(corpus)
 
-    tfidf = load_tfidf_model(corpus)
-    # corpus_tfidf[0]で0番目の文書の単語のcorpusのtfidfを表示
-    corpus_tfidf = tfidf[corpus]
     for index, corpus_of_each_text in enumerate(corpus):
         if index % 10 == 0:
             print("進捗度: ", str(round((index+1) / len(corpus) * 100, 2)), '%')
