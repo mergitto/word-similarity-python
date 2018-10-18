@@ -8,6 +8,10 @@ def load_pickle():
         advice = pickle.load(f)
     return advice
 
+def dump_pickle(data):
+    with open('advice_10_tfidf.pickle', 'wb') as f:
+        pickle.dump(data, f)
+
 def load_tfidf_model(corpus):
     from gensim import models
     tfidf = models.TfidfModel(corpus)
@@ -27,6 +31,9 @@ def counter(dictionary):
 def bag_of_word(dictionary, texts):
     return [dictionary.doc2bow(text) for text in texts]
 
+def greater_than_zero(array):
+    return len(array) > 0
+
 def gensim_tfidf(advice):
     frequency, texts = counter(advice)
 
@@ -44,10 +51,12 @@ def gensim_tfidf(advice):
         tfidf_vector_sum = 0
         for one_corpus in corpus_of_each_text:
             tfidf_tuple = [ct for ct in corpus_tfidf[index] if ct[0] == one_corpus[0]][0]
-            advice[index]['tfidf'][dictionary[tfidf_tuple[0]]] = tfidf_tuple[1]
-            tfidf_vector_sum += tfidf_tuple[1]
+            tfidf_word = dictionary[tfidf_tuple[0]]
+            tfidf_value = tfidf_tuple[1]
+            advice[index]['tfidf'][tfidf_word] = tfidf_value
+            tfidf_vector_sum += tfidf_value
 
-        if len(corpus_of_each_text) > 0:
+        if greater_than_zero(corpus_of_each_text):
             tfidf_average = tfidf_vector_sum / len(corpus_of_each_text)
             advice[index]['tfidf_average'] = tfidf_average
         else:
@@ -59,7 +68,5 @@ if __name__ == '__main__':
     advice = load_pickle()
     advice = gensim_tfidf(advice)
 
-    with open('advice_10_tfidf.pickle', 'wb') as f:
-        pickle.dump(advice, f)
-
+    dump_pickle(advice)
 
