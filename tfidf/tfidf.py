@@ -8,6 +8,10 @@ def load_pickle():
         advice = pickle.load(f)
     return advice
 
+def load_tfidf_model(corpus):
+    from gensim import models
+    return models.TfidfModel(corpus)
+
 def counter(dictionary):
     texts = []
     frequency = defaultdict(int)
@@ -29,8 +33,7 @@ def gensim_tfidf(advice):
     # corpus[0]で0番目の文書のbag-of-wordを取得できる
     corpus = bag_of_word(dictionary, texts)
 
-    from gensim import models
-    tfidf = models.TfidfModel(corpus)#, normalize=False)
+    tfidf = load_tfidf_model(corpus)
     # corpus_tfidf[0]で0番目の文書の単語のcorpusのtfidfを表示
     corpus_tfidf = tfidf[corpus]
     for index, corpus_of_each_text in enumerate(corpus):
