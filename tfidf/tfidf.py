@@ -8,16 +8,19 @@ def load_pickle():
         advice = pickle.load(f)
     return advice
 
-def gensim_tfidf(advice):
+def counter(dictionary):
     texts = []
-
     frequency = defaultdict(int)
-    for reportNo in advice:
-        for token in advice[reportNo]['advice_divide_mecab']:
+    for reportNo in dictionary:
+        for token in dictionary[reportNo]['advice_divide_mecab']:
             frequency[token] += 1
         texts.append(advice[reportNo]['advice_divide_mecab'])
-
     texts = [[token for token in text if frequency[token] > 1] for text in texts]
+    return frequency, texts
+
+def gensim_tfidf(advice):
+    frequency, texts = counter(advice)
+
     # id:単語　の形
     dictionary = corpora.Dictionary(texts)
     # corpus[0]で0番目の文書のbag-of-wordを取得できる
