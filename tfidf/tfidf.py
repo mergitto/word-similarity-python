@@ -6,9 +6,6 @@ import math
 with open('../advice_10.pickle', 'rb') as f:
     advice = pickle.load(f)
 
-def new_idf(docfreq, totaldocs, log_base=2.0, add=1.0):
-    return add + math.log(1.0 * totaldocs / docfreq, log_base)
-
 def gensim_tfidf(advice):
     texts = []
 
@@ -25,7 +22,7 @@ def gensim_tfidf(advice):
     corpus = [dictionary.doc2bow(text) for text in texts]
 
     from gensim import models
-    tfidf = models.TfidfModel(corpus)#, wglobal=new_idf)#, normalize=False)
+    tfidf = models.TfidfModel(corpus)#, normalize=False)
     # corpus_tfidf[0]で0番目の文書の単語のcorpusのtfidfを表示
     corpus_tfidf = tfidf[corpus]
     for index, corpus_of_each_text in enumerate(corpus):
