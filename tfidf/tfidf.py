@@ -49,9 +49,10 @@ def gensim_tfidf(advice):
 
         current_advice = advice[index]
         current_advice['tfidf'] = {}
+        current_corpus_tfidf = corpus_tfidf[index]
         tfidf_vector_sum = 0
         for one_corpus in corpus_of_each_text:
-            tfidf_tuple = [ct for ct in corpus_tfidf[index] if ct[0] == one_corpus[0]][0]
+            tfidf_tuple = [ct for ct in current_corpus_tfidf if ct[0] == one_corpus[0]][0]
             tfidf_word = dictionary[tfidf_tuple[0]]
             tfidf_value = tfidf_tuple[1]
             current_advice['tfidf'][tfidf_word] = tfidf_value
