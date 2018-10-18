@@ -31,15 +31,31 @@ def counter(dictionary):
 def bag_of_word(dictionary, texts):
     return [dictionary.doc2bow(text) for text in texts]
 
-def greater_than_zero(array_length):
-    return array_length > 0
+def greater_than(array_length, n=0):
+    return array_length > n
 
 def tfidf_value_average(tfidf_sum, division_length):
-    if greater_than_zero(division_length):
+    if greater_than(division_length, n=0):
         tfidf_average = tfidf_sum / division_length
     else:
         tfidf_average = 0
     return tfidf_average
+
+def dictionary_sort_value(dictionary, desc=False):
+    return sorted(dictionary.items(), key=lambda x: x[1], reverse=desc)
+
+def add_tfidf_top_10_average(current_advice):
+    tfidfs = dictionary_sort_value(current_advice['tfidf'], desc=True)
+    top_10_tfidf = tfidfs[:10] # もし配列が10個未満の場合は上位10ではないが、その数で計算する
+    tfidf_sum = 0
+    for tfidf_tuple in top_10_tfidf:
+        tfidf_sum += tfidf_tuple[1]
+
+    tfidf_average = 0.0001
+    if greater_than(len(top_10_tfidf), n=5):
+        tfidf_average = tfidf_sum / len(top_10_tfidf)
+    current_advice['tfidf_top_average'] = tfidf_average
+    return current_advice
 
 def gensim_tfidf(advice):
     frequency, texts = counter(advice)
@@ -67,6 +83,8 @@ def gensim_tfidf(advice):
 
         corpus_length = len(corpus_of_each_text)
         current_advice['tfidf_average'] = tfidf_value_average(tfidf_vector_sum, corpus_length)
+
+        add_tfidf_top_10_average(current_advice)
 
     return advice
 
