@@ -8,8 +8,8 @@ def load_pickle():
         advice = pickle.load(f)
     return advice
 
-def dump_pickle(data):
-    with open('advice_10_tfidf.pickle', 'wb') as f:
+def dump_pickle(data, dump_file_name):
+    with open(dump_file_name, 'wb') as f:
         pickle.dump(data, f)
 
 def load_tfidf_model(corpus):
@@ -65,6 +65,7 @@ def gensim_tfidf(advice):
     # corpus[0]で0番目の文書のbag-of-wordを取得できる
     corpus = bag_of_word(dictionary, texts)
     corpus_tfidf = load_tfidf_model(corpus)
+    dump_pickle(corpus_tfidf, 'corpus_tfidf.pickle')
 
     for index, corpus_of_each_text in enumerate(corpus):
         if index % 10 == 0:
@@ -92,5 +93,5 @@ if __name__ == '__main__':
     advice = load_pickle()
     advice = gensim_tfidf(advice)
 
-    dump_pickle(advice)
+    dump_pickle(advice, 'advice_10_tfidf.pickle')
 
