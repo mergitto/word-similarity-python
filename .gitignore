@@ -11,3 +11,4 @@
 /tfidf/*.pickle
 /verification/*.txt
 /verification/*/*.txt
+pluck_evaluation/

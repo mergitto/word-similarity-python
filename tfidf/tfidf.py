@@ -3,8 +3,8 @@ from collections import defaultdict
 import pickle
 import math
 
-def load_pickle():
-    with open('../advice_10.pickle', 'rb') as f:
+def load_pickle(load_file_name):
+    with open(load_file_name, 'rb') as f:
         advice = pickle.load(f)
     return advice
 
@@ -90,7 +90,7 @@ def gensim_tfidf(advice):
     return advice
 
 if __name__ == '__main__':
-    advice = load_pickle()
+    advice = load_pickle("../advice_10.pickle")
     advice = gensim_tfidf(advice)
 
     dump_pickle(advice, 'advice_10_tfidf.pickle')
