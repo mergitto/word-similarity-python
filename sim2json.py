@@ -128,8 +128,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
             lda[report_no] = report['topic']
-            wordCount[similarWord] += 1
             if similarWord not in report['advice_divide_mecab']: continue
+            wordCount[similarWord] += 1
             wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
 
     wordCount = clean_sort_dictionary(wordCount)

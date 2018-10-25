@@ -17,3 +17,4 @@ word2vecなどで単語同士の類似度をコサイン類似度から計算す
 1. `python addTopic.py model/分散表現学習モデル名` LDAモデルの学習をする
 1. addTopic.pyを`train = False`に設定する
 1. `python addTopic.py model/分散表現学習モデル名` 学習したLDAモデルを`python pgsql.py`によって作成した辞書に追加する
+
