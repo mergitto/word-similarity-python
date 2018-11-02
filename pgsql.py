@@ -68,6 +68,7 @@ def allAdvise():
                 "companyShokushu": row[5],
                 "advice": row[3],
                 "companyShokushu": row[5],
+                "course_code": row[0],
                 "advice_divide_mecab": '' if len(row[3]) == 0 else parser_mecab(row[3]),
                 "advice_divide_mecab_space": '' if len(row[3]) == 0 else parser_space(row[3]),
         }
