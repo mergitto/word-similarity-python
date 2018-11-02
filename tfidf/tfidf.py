@@ -90,8 +90,8 @@ def gensim_tfidf(advice):
     return advice
 
 if __name__ == '__main__':
-    advice = load_pickle("../advice_10.pickle")
+    advice = load_pickle("../advice_2.pickle")
     advice = gensim_tfidf(advice)
 
-    dump_pickle(advice, 'advice_10_tfidf.pickle')
+    dump_pickle(advice, 'advice_2_tfidf.pickle')
 
