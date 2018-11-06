@@ -153,7 +153,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         similarSum = nameSimilarityNp[np.where(reportNp == str(report_no))]
         simSum = calcSimSum(similarSum)
         simLog = calcSimLog(simSum)
-        compRecommendDic[report_no] = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
+        if recommend_formula == 1:
+            compRecommendDic[report_no] = simSum * (typeRate * shokushuRate)
+        else:
+            compRecommendDic[report_no] = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
 
     sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
     advice_json = {}
@@ -181,6 +184,7 @@ equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
+recommend_formula = int(sys.argv[6])
 
 if __name__=="__main__":
     similarReports = calc(equation)
