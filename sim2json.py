@@ -116,7 +116,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
             report_no = report["reportNo"]
-            jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
+            if recommend_formula == 2:
+                jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             if similarWord in report['tfidf']:
                 similarity = report['tfidf'][similarWord] * cosineSimilarity
@@ -135,8 +136,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     wordCount = clean_sort_dictionary(wordCount)
 
     # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
-    jsdDictionary = normalization(jsdDictionary)
-    jsdDictionary = calc.value_reverse(jsdDictionary)
+    if recommend_formula == 2:
+        jsdDictionary = normalization(jsdDictionary)
+        jsdDictionary = calc.value_reverse(jsdDictionary)
 
     # 同じ企業名で類似度を合計する
     fno1Comp = collections.Counter([comp[0] for comp in rateCount])
@@ -153,10 +155,11 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         similarSum = nameSimilarityNp[np.where(reportNp == str(report_no))]
         simSum = calcSimSum(similarSum)
         simLog = calcSimLog(simSum)
-        if recommend_formula == 1:
-            compRecommendDic[report_no] = simSum * (typeRate * shokushuRate)
+        if recommend_formula == 2:
+            recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
         else:
-            compRecommendDic[report_no] = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
+            recommend_rate = simSum * (typeRate * shokushuRate)
+        compRecommendDic[report_no] = recommend_rate
 
     sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
     advice_json = {}
