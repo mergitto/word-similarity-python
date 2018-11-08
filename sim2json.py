@@ -95,14 +95,16 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     report_similarities = defaultdict(list)
     reports_values = {}
-    wordDictionary = {} # 報告書ごとの類似単語辞書
     wordCount = {} # 類似単語の出現回数
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
 
     adDicts = load_reports()
     for index in adDicts:
-        wordDictionary[adDicts[index]["reportNo"]] = {}
+        report_no = adDicts[index]["reportNo"]
+        reports_values[report_no] = {}
+        reports_values[report_no]["similarities"] = []
+        reports_values[report_no]["word_and_similarity"] = {}
     calc = Calc()
 
     for word_and_similarity in results:
@@ -125,14 +127,15 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
             report_similarities[report_no].append(similarity)
-            reports_values[report_no] = {
-                        "type": report["companyType"],
-                        "shokushu": report["companyShokushu"],
-                        "lda": report['topic']
-                    }
+
+            reports_values[report_no]["similarities"].append(similarity)
+            reports_values[report_no]["type"] = report["companyType"]
+            reports_values[report_no]["shokushu"] = report["companyShokushu"]
+            reports_values[report_no]["lda"] = report["topic"]
+
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
-            wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
+            reports_values[report_no]["word_and_similarity"].update({decode_word(similarWord): cosineSimilarity})
 
     wordCount = clean_sort_dictionary(wordCount)
 
@@ -161,7 +164,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         advice_json[str(ranking)] = {
                 'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
-                'words': wordDictionary[report_no],
+                'words': reports_values[report_no]["word_and_similarity"],
                 'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
                 'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
             }
