@@ -89,6 +89,23 @@ def clean_sort_dictionary(dictionary):
     [dictionary.pop(w[0]) for w in list(dictionary.items()) if w[1] == 0]
     return sorted(dictionary.items(), key=lambda x:x[1], reverse=True)
 
+def advice_to_json(recommend_dict, reports_values, word_count):
+    sortRecommendLevelReports = sorted(recommend_dict.items(), key=lambda x: x[1], reverse=True)
+    advice_json = {}
+    for ranking, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM], start=1):
+        report_no = primaryComp[0]
+        advice_json[str(ranking)] = {
+                'report_no': report_no,
+                'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
+                'words': reports_values[report_no]["word_and_similarity"],
+                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
+                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
+            }
+    advice_json['word_count'] = word_count
+    advice_json['company_type'] = company_type_name
+    advice_json['company_shokushu'] = company_shokushu_name
+    return advice_json
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
@@ -157,20 +174,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             recommend_rate = simSum * (typeRate * shokushuRate)
         compRecommendDic[report_no] = recommend_rate
 
-    sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
-    advice_json = {}
-    for ranking, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM], start=1):
-        report_no = primaryComp[0]
-        advice_json[str(ranking)] = {
-                'report_no': report_no,
-                'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
-                'words': reports_values[report_no]["word_and_similarity"],
-                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
-                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
-            }
-    advice_json['word_count'] = wordCount
-    advice_json['company_type'] = company_type_name
-    advice_json['company_shokushu'] = company_shokushu_name
+    advice_json = advice_to_json(compRecommendDic, reports_values, wordCount)
     return json_dump(advice_json)
 
 def calc(equation):
