@@ -93,7 +93,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
 
-    rateCount = defaultdict(list)
+    report_similarities = defaultdict(list)
     reportNoType = {} # 報告書Noと業種の辞書
     reportNoShokushu = {} # 報告書Noと職種の辞書
     wordDictionary = {} # 報告書ごとの類似単語辞書
@@ -126,7 +126,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 similarity = cosineSimilarity
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
-            rateCount[report_no].append(similarity)
+            report_similarities[report_no].append(similarity)
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
             lda[report_no] = report['topic']
@@ -143,10 +143,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     compRecommendDic = {}
 
-    for report_no in rateCount:
+    for report_no in report_similarities:
         typeRate = list_checked(reportNoType[report_no], company_type_name)
         shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
-        simSum = sum(rateCount[report_no])
+        simSum = sum(report_similarities[report_no])
         simLog = calcSimLog(simSum)
         if recommend_formula == 2:
             recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
