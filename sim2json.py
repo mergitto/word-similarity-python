@@ -120,22 +120,27 @@ def recommend_rate(report_similarities, reports_values, jsdDictionary):
         compRecommendDic[report_no] = recommend_rate
     return compRecommendDic
 
+def initialize_report_dict(advice_dictionary):
+    reports_values = {}
+    for index in advice_dictionary:
+        report_no = advice_dictionary[index]["reportNo"]
+        reports_values[report_no] = {}
+        reports_values[report_no]["similarities"] = []
+        reports_values[report_no]["word_and_similarity"] = {}
+    return reports_values
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
 
     report_similarities = defaultdict(list)
-    reports_values = {}
     wordCount = {} # 類似単語の出現回数
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
 
     adDicts = load_reports()
-    for index in adDicts:
-        report_no = adDicts[index]["reportNo"]
-        reports_values[report_no] = {}
-        reports_values[report_no]["similarities"] = []
-        reports_values[report_no]["word_and_similarity"] = {}
+    reports_values = initialize_report_dict(adDicts)
+
     calc = Calc()
 
     for word_and_similarity in results:
