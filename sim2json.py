@@ -175,9 +175,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         jsdDictionary = normalization(jsdDictionary)
         jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    compRecommendDic = recommend_rate(report_similarities, reports_values, jsdDictionary)
+    recommendRateDict = recommend_rate(report_similarities, reports_values, jsdDictionary)
+    advice_json = advice_to_json(recommendRateDict, reports_values, wordCount)
 
-    advice_json = advice_to_json(compRecommendDic, reports_values, wordCount)
     return json_dump(advice_json)
 
 def calc(equation):
