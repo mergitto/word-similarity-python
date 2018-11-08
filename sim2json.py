@@ -4,6 +4,7 @@
 from gensim.models import word2vec
 import sys
 import collections
+from collections import defaultdict
 import numpy as np
 import pickle
 import math
@@ -92,7 +93,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
 
-    rateCount = []
+    rateCount = defaultdict(list)
     reportNoType = {} # 報告書Noと業種の辞書
     reportNoShokushu = {} # 報告書Noと職種の辞書
     wordDictionary = {} # 報告書ごとの類似単語辞書
@@ -125,7 +126,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 similarity = cosineSimilarity
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
-            rateCount.append([report_no, report["companyName"], similarity])
+            rateCount[report_no].append(similarity)
             reportNoType[report_no] = report["companyType"]
             reportNoShokushu[report_no] = report["companyShokushu"]
             lda[report_no] = report['topic']
@@ -140,20 +141,12 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         jsdDictionary = normalization(jsdDictionary)
         jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    # 同じ企業名で類似度を合計する
-    fno1Comp = collections.Counter([comp[0] for comp in rateCount])
-
-    rateCountNp = np.array(rateCount)
-    reportNp = rateCountNp[:, [0]].reshape(-1,)
-    nameSimilarityNp = rateCountNp[:, [1, 2]]
-
     compRecommendDic = {}
 
-    for report_no in fno1Comp:
+    for report_no in rateCount:
         typeRate = list_checked(reportNoType[report_no], company_type_name)
         shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
-        similarSum = nameSimilarityNp[np.where(reportNp == str(report_no))]
-        simSum = calcSimSum(similarSum)
+        simSum = sum(rateCount[report_no])
         simLog = calcSimLog(simSum)
         if recommend_formula == 2:
             recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
