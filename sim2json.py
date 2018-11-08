@@ -106,6 +106,20 @@ def advice_to_json(recommend_dict, reports_values, word_count):
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
+def recommend_rate(report_similarities, reports_values, jsdDictionary):
+    compRecommendDic = {}
+    for report_no in report_similarities:
+        typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
+        shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
+        simSum = sum(report_similarities[report_no])
+        simLog = calcSimLog(simSum)
+        if recommend_formula == 2:
+            recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
+        else:
+            recommend_rate = simSum * (typeRate * shokushuRate)
+        compRecommendDic[report_no] = recommend_rate
+    return compRecommendDic
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
@@ -161,18 +175,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         jsdDictionary = normalization(jsdDictionary)
         jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    compRecommendDic = {}
-
-    for report_no in report_similarities:
-        typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
-        shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
-        simSum = sum(report_similarities[report_no])
-        simLog = calcSimLog(simSum)
-        if recommend_formula == 2:
-            recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
-        else:
-            recommend_rate = simSum * (typeRate * shokushuRate)
-        compRecommendDic[report_no] = recommend_rate
+    compRecommendDic = recommend_rate(report_similarities, reports_values, jsdDictionary)
 
     advice_json = advice_to_json(compRecommendDic, reports_values, wordCount)
     return json_dump(advice_json)
