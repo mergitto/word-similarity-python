@@ -106,12 +106,12 @@ def advice_to_json(recommend_dict, reports_values, word_count):
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
-def recommend_rate(report_similarities, reports_values, jsdDictionary):
+def recommend_rate(reports_values, jsdDictionary):
     compRecommendDic = {}
-    for report_no in report_similarities:
+    for report_no in reports_values:
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
-        simSum = sum(report_similarities[report_no])
+        simSum = sum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
         if recommend_formula == 2:
             recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
@@ -133,7 +133,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
 
-    report_similarities = defaultdict(list)
     wordCount = {} # 類似単語の出現回数
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
@@ -162,7 +161,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 similarity = cosineSimilarity
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
-            report_similarities[report_no].append(similarity)
 
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
@@ -180,7 +178,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         jsdDictionary = normalization(jsdDictionary)
         jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    recommendRateDict = recommend_rate(report_similarities, reports_values, jsdDictionary)
+    recommendRateDict = recommend_rate(reports_values, jsdDictionary)
     advice_json = advice_to_json(recommendRateDict, reports_values, wordCount)
 
     return json_dump(advice_json)
