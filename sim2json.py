@@ -94,12 +94,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     results = get_similar_words(posi)
 
     report_similarities = defaultdict(list)
-    reportNoType = {} # 報告書Noと業種の辞書
-    reportNoShokushu = {} # 報告書Noと職種の辞書
+    reports_values = {}
     wordDictionary = {} # 報告書ごとの類似単語辞書
     wordCount = {} # 類似単語の出現回数
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
-    lda = {}
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
 
     adDicts = load_reports()
@@ -127,9 +125,11 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
             report_similarities[report_no].append(similarity)
-            reportNoType[report_no] = report["companyType"]
-            reportNoShokushu[report_no] = report["companyShokushu"]
-            lda[report_no] = report['topic']
+            reports_values[report_no] = {
+                        "type": report["companyType"],
+                        "shokushu": report["companyShokushu"],
+                        "lda": report['topic']
+                    }
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
             wordDictionary[report_no].update({decode_word(similarWord): cosineSimilarity})
@@ -144,8 +144,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     compRecommendDic = {}
 
     for report_no in report_similarities:
-        typeRate = list_checked(reportNoType[report_no], company_type_name)
-        shokushuRate = list_checked(reportNoShokushu[report_no], company_shokushu_name)
+        typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
+        shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         simSum = sum(report_similarities[report_no])
         simLog = calcSimLog(simSum)
         if recommend_formula == 2:
@@ -162,8 +162,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': wordDictionary[report_no],
-                'lda1': round(lda[report_no][0], DECIMAL_POINT),
-                'lda2': round(lda[report_no][1], DECIMAL_POINT),
+                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
+                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
             }
     advice_json['word_count'] = wordCount
     advice_json['company_type'] = company_type_name
