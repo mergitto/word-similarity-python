@@ -84,6 +84,7 @@ def gensim_tfidf(advice):
 
         corpus_length = len(corpus_of_each_text)
         current_advice['tfidf_average'] = tfidf_value_average(tfidf_vector_sum, corpus_length)
+        current_advice['tfidf_sum'] = tfidf_vector_sum
 
         add_tfidf_top_10_average(current_advice)
 
