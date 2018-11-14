@@ -106,6 +106,9 @@ def dict_norm(dictionary, flatten_values):
     dictionary = norm(dictionary, x_max, x_min, diff_max_min)
     return dictionary
 
+def flatten(dictionary):
+    return [dictionary[key] for key in dictionary]
+
 
 def gensim_bm25(advice):
     PARAM_K1 = 1.5
@@ -133,8 +136,11 @@ def gensim_bm25(advice):
     bm25_norm = dict_norm(bm25_dict, bm25_list)
 
     for key in advice:
+        current_bm25 = bm25_norm[key]
         current_advice = advice[key]
-        current_advice["bm25"] = bm25_norm[key]
+        current_advice["bm25"] = current_bm25
+        current_advice["bm25_sum"] = sum(flatten(current_bm25))
+        current_advice["bm25_average"] = sum(flatten(current_bm25)) / (len(flatten(current_bm25)) + 0.001)
 
     return advice
 
