@@ -89,22 +89,57 @@ def clean_sort_dictionary(dictionary):
     [dictionary.pop(w[0]) for w in list(dictionary.items()) if w[1] == 0]
     return sorted(dictionary.items(), key=lambda x:x[1], reverse=True)
 
+def advice_to_json(recommend_dict, reports_values, word_count):
+    sortRecommendLevelReports = sorted(recommend_dict.items(), key=lambda x: x[1], reverse=True)
+    advice_json = {}
+    for ranking, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM], start=1):
+        report_no = primaryComp[0]
+        advice_json[str(ranking)] = {
+                'report_no': report_no,
+                'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
+                'words': reports_values[report_no]["word_and_similarity"],
+                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
+                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
+            }
+    advice_json['word_count'] = word_count
+    advice_json['company_type'] = company_type_name
+    advice_json['company_shokushu'] = company_shokushu_name
+    return advice_json
+
+def recommend_rate(reports_values, jsdDictionary):
+    compRecommendDic = {}
+    for report_no in reports_values:
+        typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
+        shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
+        simSum = sum(reports_values[report_no]["similarities"])
+        simLog = calcSimLog(simSum)
+        if recommend_formula == 2:
+            recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
+        else:
+            recommend_rate = simSum * (typeRate * shokushuRate)
+        compRecommendDic[report_no] = recommend_rate
+    return compRecommendDic
+
+def initialize_report_dict(advice_dictionary):
+    reports_values = {}
+    for index in advice_dictionary:
+        report_no = advice_dictionary[index]["reportNo"]
+        reports_values[report_no] = {}
+        reports_values[report_no]["similarities"] = []
+        reports_values[report_no]["word_and_similarity"] = {}
+    return reports_values
+
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     posi = sorted(list(set(posi)), key=posi.index)
     results = get_similar_words(posi)
 
-    report_similarities = defaultdict(list)
-    reports_values = {}
     wordCount = {} # 類似単語の出現回数
     jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
     equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
 
     adDicts = load_reports()
-    for index in adDicts:
-        report_no = adDicts[index]["reportNo"]
-        reports_values[report_no] = {}
-        reports_values[report_no]["similarities"] = []
-        reports_values[report_no]["word_and_similarity"] = {}
+    reports_values = initialize_report_dict(adDicts)
+
     calc = Calc()
 
     for word_and_similarity in results:
@@ -126,7 +161,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 similarity = cosineSimilarity
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
-            report_similarities[report_no].append(similarity)
 
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
@@ -144,33 +178,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         jsdDictionary = normalization(jsdDictionary)
         jsdDictionary = calc.value_reverse(jsdDictionary)
 
-    compRecommendDic = {}
+    recommendRateDict = recommend_rate(reports_values, jsdDictionary)
+    advice_json = advice_to_json(recommendRateDict, reports_values, wordCount)
 
-    for report_no in report_similarities:
-        typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
-        shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
-        simSum = sum(report_similarities[report_no])
-        simLog = calcSimLog(simSum)
-        if recommend_formula == 2:
-            recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
-        else:
-            recommend_rate = simSum * (typeRate * shokushuRate)
-        compRecommendDic[report_no] = recommend_rate
-
-    sortRecommendLevelReports = sorted(compRecommendDic.items(), key=lambda x: x[1], reverse=True)
-    advice_json = {}
-    for ranking, primaryComp in enumerate(sortRecommendLevelReports[:DISPLAY_REPORTS_NUM], start=1):
-        report_no = primaryComp[0]
-        advice_json[str(ranking)] = {
-                'report_no': report_no,
-                'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
-                'words': reports_values[report_no]["word_and_similarity"],
-                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
-                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
-            }
-    advice_json['word_count'] = wordCount
-    advice_json['company_type'] = company_type_name
-    advice_json['company_shokushu'] = company_shokushu_name
     return json_dump(advice_json)
 
 def calc(equation):

@@ -84,14 +84,70 @@ def gensim_tfidf(advice):
 
         corpus_length = len(corpus_of_each_text)
         current_advice['tfidf_average'] = tfidf_value_average(tfidf_vector_sum, corpus_length)
+        current_advice['tfidf_sum'] = tfidf_vector_sum
 
         add_tfidf_top_10_average(current_advice)
+
+    return advice
+
+def norm(dictionary, x_max, x_min, diff_max_min):
+    for key in dictionary:
+        current_values = dictionary[key]
+        for index, word in enumerate(current_values):
+            current_value = current_values[word]
+            dictionary[key][word] = \
+                ((current_value - x_min) / diff_max_min) + 0.001
+    return dictionary
+
+def dict_norm(dictionary, flatten_values):
+    x_max = max(flatten_values)
+    x_min = min(flatten_values)
+    diff_max_min = x_max - x_min
+    dictionary = norm(dictionary, x_max, x_min, diff_max_min)
+    return dictionary
+
+def flatten(dictionary):
+    return [dictionary[key] for key in dictionary]
+
+
+def gensim_bm25(advice):
+    PARAM_K1 = 1.5
+    PARAM_B = 0.75
+    EPSILON = 0.25
+    from gensim.summarization.bm25 import BM25
+    frequency, texts = counter(advice)
+    dictionary = corpora.Dictionary(texts) # id:単語　の形
+
+    okapi_bm25 = BM25(texts)
+    average_idf = sum(float(val) for val in okapi_bm25.idf.values()) / len(okapi_bm25.idf)
+
+    bm25_dict = {}
+    bm25_list = []
+    for index, text in enumerate(texts):
+        bm25_dict[index] = {}
+        for word in text:
+            score = 0
+            idf = okapi_bm25.idf[word] if okapi_bm25.idf[word] >= 0 else EPSILON * average_idf
+            score += (idf * okapi_bm25.f[index][word] * (PARAM_K1 + 1)
+                      / (okapi_bm25.f[index][word] + PARAM_K1 * (1 - PARAM_B + PARAM_B * len(text) / okapi_bm25.avgdl)))
+            bm25_dict[index][word] = score
+            bm25_list.append(score)
+
+    bm25_norm = dict_norm(bm25_dict, bm25_list)
+
+    for key in advice:
+        current_bm25 = bm25_norm[key]
+        current_advice = advice[key]
+        current_advice["bm25"] = current_bm25
+        current_advice["bm25_sum"] = sum(flatten(current_bm25))
+        current_advice["bm25_average"] = sum(flatten(current_bm25)) / (len(flatten(current_bm25)) + 0.001)
 
     return advice
 
 if __name__ == '__main__':
     advice = load_pickle("../advice_2.pickle")
     advice = gensim_tfidf(advice)
+    advice = gensim_bm25(advice)
 
     dump_pickle(advice, 'advice_2_tfidf.pickle')
 
