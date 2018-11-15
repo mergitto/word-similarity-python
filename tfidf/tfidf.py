@@ -129,6 +129,8 @@ def gensim_bm25(advice):
 
     bm25_dict = {}
     bm25_list = []
+    bm25_jsd_dict = {}
+    bm25_jsd_list = []
     calculation = Calc()
     # 例えば入力が「面接」だった時のトピック値としておく
     equation_lda_value = np.array(
@@ -136,17 +138,26 @@ def gensim_bm25(advice):
             )
     for index, text in enumerate(texts):
         bm25_dict[index] = {}
+        bm25_jsd_dict[index] = {}
         report = advice[index]
         jsd = calculation.jsd(equation_lda_value, report["topic"])
         for word in text:
-            score = 0
             idf = okapi_bm25.idf[word] if okapi_bm25.idf[word] >= 0 else EPSILON * average_idf
+
+            score = 0
             score += (idf * okapi_bm25.f[index][word] * (PARAM_K1 + 1)
                       / (okapi_bm25.f[index][word] + PARAM_K1 * (1 - PARAM_B + PARAM_B * len(text) / okapi_bm25.avgdl)))
             bm25_dict[index][word] = score
             bm25_list.append(score)
 
+            score_jsd = 0
+            score_jsd += (idf * okapi_bm25.f[index][word] * (PARAM_K1 + 1)
+                      / (okapi_bm25.f[index][word] + PARAM_K1 * (1 - PARAM_B + PARAM_B * jsd / okapi_bm25.avgdl)))
+            bm25_jsd_dict[index][word] = score_jsd
+            bm25_jsd_list.append(score_jsd)
+
     bm25_norm = dict_norm(bm25_dict, bm25_list)
+    bm25_jsd_norm = dict_norm(bm25_jsd_dict, bm25_jsd_list)
 
     for key in advice:
         current_bm25 = bm25_norm[key]
@@ -154,6 +165,11 @@ def gensim_bm25(advice):
         current_advice["bm25"] = current_bm25
         current_advice["bm25_sum"] = sum(flatten(current_bm25))
         current_advice["bm25_average"] = sum(flatten(current_bm25)) / (len(flatten(current_bm25)) + 0.001)
+
+        current_bm25_jsd = bm25_jsd_norm[key]
+        current_advice["bm25_jsd"] = current_bm25_jsd
+        current_advice["bm25_jsd_sum"] = sum(flatten(current_bm25_jsd))
+        current_advice["bm25_jsd_average"] = sum(flatten(current_bm25_jsd)) / (len(flatten(current_bm25_jsd)) + 0.001)
 
     return advice
 
