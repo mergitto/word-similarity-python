@@ -2,6 +2,10 @@ from gensim import corpora
 from collections import defaultdict
 import pickle
 import math
+# append import path
+import os, sys
+sys.path.append(os.pardir)
+from calc import Calc
 
 def load_pickle(load_file_name):
     with open(load_file_name, 'rb') as f:
@@ -22,9 +26,10 @@ def counter(dictionary):
     texts = []
     frequency = defaultdict(int)
     for reportNo in dictionary:
-        for token in dictionary[reportNo]['advice_divide_mecab']:
+        advice_divide_mecab = dictionary[reportNo]['advice_divide_mecab']
+        for token in advice_divide_mecab:
             frequency[token] += 1
-        texts.append(advice[reportNo]['advice_divide_mecab'])
+        texts.append(advice_divide_mecab)
     texts = [[token for token in text if frequency[token] > 1] for text in texts]
     return frequency, texts
 
@@ -114,20 +119,23 @@ def gensim_bm25(advice):
     PARAM_K1 = 1.5
     PARAM_B = 0.75
     EPSILON = 0.25
+    import numpy as np
     from gensim.summarization.bm25 import BM25
     frequency, texts = counter(advice)
-    dictionary = corpora.Dictionary(texts) # id:単語　の形
 
     okapi_bm25 = BM25(texts)
     average_idf = sum(float(val) for val in okapi_bm25.idf.values()) / len(okapi_bm25.idf)
 
     bm25_dict = {}
     bm25_list = []
+    calculation = Calc()
     for index, text in enumerate(texts):
         bm25_dict[index] = {}
+        report = advice[index]
         for word in text:
-            score = 0
             idf = okapi_bm25.idf[word] if okapi_bm25.idf[word] >= 0 else EPSILON * average_idf
+
+            score = 0
             score += (idf * okapi_bm25.f[index][word] * (PARAM_K1 + 1)
                       / (okapi_bm25.f[index][word] + PARAM_K1 * (1 - PARAM_B + PARAM_B * len(text) / okapi_bm25.avgdl)))
             bm25_dict[index][word] = score
