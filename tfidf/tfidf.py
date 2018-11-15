@@ -122,7 +122,6 @@ def gensim_bm25(advice):
     import numpy as np
     from gensim.summarization.bm25 import BM25
     frequency, texts = counter(advice)
-    dictionary = corpora.Dictionary(texts) # id:単語　の形
 
     okapi_bm25 = BM25(texts)
     average_idf = sum(float(val) for val in okapi_bm25.idf.values()) / len(okapi_bm25.idf)
