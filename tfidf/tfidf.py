@@ -2,6 +2,11 @@ from gensim import corpora
 from collections import defaultdict
 import pickle
 import math
+# append import path
+import os, sys
+sys.path.append(os.pardir)
+from calc import Calc
+from addTopic import lda_value
 
 def load_pickle(load_file_name):
     with open(load_file_name, 'rb') as f:
@@ -114,6 +119,7 @@ def gensim_bm25(advice):
     PARAM_K1 = 1.5
     PARAM_B = 0.75
     EPSILON = 0.25
+    import numpy as np
     from gensim.summarization.bm25 import BM25
     frequency, texts = counter(advice)
     dictionary = corpora.Dictionary(texts) # id:単語　の形
@@ -123,8 +129,15 @@ def gensim_bm25(advice):
 
     bm25_dict = {}
     bm25_list = []
+    calculation = Calc()
+    # 例えば入力が「面接」だった時のトピック値としておく
+    equation_lda_value = np.array(
+                lda_value(["面接"], texts)['topic']
+            )
     for index, text in enumerate(texts):
         bm25_dict[index] = {}
+        report = advice[index]
+        jsd = calculation.jsd(equation_lda_value, report["topic"])
         for word in text:
             score = 0
             idf = okapi_bm25.idf[word] if okapi_bm25.idf[word] >= 0 else EPSILON * average_idf
