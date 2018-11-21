@@ -26,7 +26,8 @@ def counter(dictionary):
     texts = []
     frequency = defaultdict(int)
     for reportNo in dictionary:
-        advice_divide_mecab = dictionary[reportNo]['advice_divide_mecab']
+        report = dictionary[reportNo]
+        advice_divide_mecab = list(report['advice_divide_mecab'])
         for token in advice_divide_mecab:
             frequency[token] += 1
         texts.append(advice_divide_mecab)
