@@ -9,11 +9,13 @@ from const import *
 import pickle
 from parse import *
 
-conn = psycopg2.connect(
-    "host="+POSTGRES["PGHOST"]+" port="+POSTGRES["PORT"]+" dbname="+POSTGRES["DBNAME"]+" user="+POSTGRES["USER"]
-)
-conn.set_client_encoding('UTF8') # 文字コードの設定
-dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor) # 列名を指定してデータの取得を行う前準備
+def connect_pg():
+    conn = psycopg2.connect(
+        "host="+POSTGRES["PGHOST"]+" port="+POSTGRES["PORT"]+" dbname="+POSTGRES["DBNAME"]+" user="+POSTGRES["USER"]
+    )
+    conn.set_client_encoding('UTF8') # 文字コードの設定
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor) # 列名を指定してデータの取得を行う前準備
+    return dict_cur
 
 def clensing(text):
     text = re.sub("\<.+?\>", "", text)
@@ -51,26 +53,27 @@ def clensing(text):
     return text
 
 def allAdvise():
+    dict_cur = connect_pg()
     dict_cur.execute(SQL["QUERY"])
     adviceDict = {}
     select_count = len(dict_cur.fetchall())
     dict_cur.execute(SQL["QUERY"])
     for index, row in enumerate(dict_cur):
+        report = dict(row)
         print(round(index / select_count * 100, 3), "%")
-        if row[3] != None:
-            row[3] = clensing(row[3])
+        if report["advice"] != None:
+            report["advice"] = clensing(report["advice"])
         else:
-            row[3] = ''
+            report["advice"] = ''
         adviceDict[index] = {
-                'reportNo': row[4],
-                "companyName": row[1].replace("\u3000", " "),
-                "companyType": row[2],
-                "companyShokushu": row[5],
-                "advice": row[3],
-                "companyShokushu": row[5],
-                "course_code": row[0],
-                "advice_divide_mecab": '' if len(row[3]) == 0 else parser_mecab(row[3]),
-                "advice_divide_mecab_space": '' if len(row[3]) == 0 else parser_space(row[3]),
+                'reportNo': report["report_no"],
+                "companyName": report["company_name"].replace("\u3000", " "),
+                "companyType": report["type_name"],
+                "companyShokushu": report["shokushu_name"],
+                "advice": report["advice"],
+                "course_code": report["course_name"],
+                "advice_divide_mecab": '' if len(report["advice"]) == 0 else parser_mecab(report["advice"]),
+                "advice_divide_mecab_space": '' if len(report["advice"]) == 0 else parser_space(report["advice"]),
         }
     return adviceDict
 
