@@ -74,6 +74,7 @@ def allAdvise():
                 "course_code": report["course_name"],
                 "advice_divide_mecab": '' if len(report["advice"]) == 0 else parser_mecab(report["advice"]),
                 "advice_divide_mecab_space": '' if len(report["advice"]) == 0 else parser_space(report["advice"]),
+                "report_created_date": report["created"],
         }
     return adviceDict
 
