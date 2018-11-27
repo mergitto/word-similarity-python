@@ -123,6 +123,8 @@ def initialize_report_dict(advice_dictionary):
         reports_values[report_no] = {}
         reports_values[report_no]["similarities"] = []
         reports_values[report_no]["word_and_similarity"] = {}
+        reports_values[report_no]["type"] = ""
+        reports_values[report_no]["shokushu"] = ""
     return reports_values
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
