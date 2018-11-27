@@ -145,6 +145,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         if not is_noun(similarWord): continue
         for index in adDicts:
             report = adDicts[index]
+            reports_values[report_no]["type"] = report["companyType"]
+            reports_values[report_no]["shokushu"] = report["companyShokushu"]
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
             report_no = report["reportNo"]
@@ -155,11 +157,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 similarity = cosineSimilarity
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
-
             reports_values[report_no]["similarities"].append(similarity)
-            reports_values[report_no]["type"] = report["companyType"]
-            reports_values[report_no]["shokushu"] = report["companyShokushu"]
-            reports_values[report_no]["lda"] = report["topic"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
