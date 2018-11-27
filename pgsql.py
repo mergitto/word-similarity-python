@@ -75,6 +75,12 @@ def allAdvise():
                 "advice_divide_mecab": '' if len(report["advice"]) == 0 else parser_mecab(report["advice"]),
                 "advice_divide_mecab_space": '' if len(report["advice"]) == 0 else parser_space(report["advice"]),
                 "report_created_date": report["created"],
+                "info_date": report["indi_date"],
+                "write_date": report["written_date"],
+                "first_date": report["fir_oral_date"],
+                "second_date": report["sec_oral_date"],
+                "final_date": report["fin_oral_date"],
+                "decision_date": report["decision_date"],
         }
     return adviceDict
 
