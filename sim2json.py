@@ -97,8 +97,6 @@ def advice_to_json(recommend_dict, reports_values, word_count):
                 'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': reports_values[report_no]["word_and_similarity"],
-                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
-                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
             }
     advice_json['word_count'] = word_count
     advice_json['company_type'] = company_type_name
@@ -123,8 +121,8 @@ def initialize_report_dict(advice_dictionary):
         reports_values[report_no] = {}
         reports_values[report_no]["similarities"] = []
         reports_values[report_no]["word_and_similarity"] = {}
-        reports_values[report_no]["type"] = ""
-        reports_values[report_no]["shokushu"] = ""
+        reports_values[report_no]["type"] = None
+        reports_values[report_no]["shokushu"] = None
     return reports_values
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
@@ -145,8 +143,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         if not is_noun(similarWord): continue
         for index in adDicts:
             report = adDicts[index]
-            reports_values[report_no]["type"] = report["companyType"]
-            reports_values[report_no]["shokushu"] = report["companyShokushu"]
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
             report_no = report["reportNo"]
@@ -158,6 +154,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
             reports_values[report_no]["similarities"].append(similarity)
+            reports_values[report_no]["type"] = report["companyType"]
+            reports_values[report_no]["shokushu"] = report["companyShokushu"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
