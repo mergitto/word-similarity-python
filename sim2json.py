@@ -69,14 +69,14 @@ def is_not_match_report(company_type, company_shokushu):
     return False
 
 def calcSimSum(similarSumary):
-    if len(similarSumary) == 0:
-        simSum = 0
-    else:
-        simSum = np.sum(similarSumary[:,1].reshape(-1,).astype(np.float64))
+    simSum = 0.1
+    if len(similarSumary) > 0:
+        for similarity in similarSumary:
+            simSum += similarity
     return simSum
 
 def calcSimLog(simSum):
-    simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
+    simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 2)
     return simLog * 1.2
 
 def is_few_words(parse_text):
@@ -108,7 +108,7 @@ def recommend_rate(reports_values):
     for report_no in reports_values:
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
-        simSum = sum(reports_values[report_no]["similarities"])
+        simSum = calcSimSum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
         recommend_rate = simSum * (typeRate * shokushuRate)
         compRecommendDic[report_no] = recommend_rate
