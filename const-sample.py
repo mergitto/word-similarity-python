@@ -22,3 +22,5 @@ DISPLAY_REPORTS_NUM = 100 # 表示する報告書数
 DECIMAL_POINT = 3 # 小数点第何位までにする
 LOWEST_WORD_LENGTH = 10 # 推薦の計算をする報告書の最低単語数
 NEIGHBOR_WORDS = 300 # 類似単語の上位n単語分の使用する
+WORD2VECMODELFILE = "your model file path" # word2vecのモデルファイルの指定
+
