@@ -13,7 +13,6 @@ from parse import is_noun
 from replace import change_word
 from replace import decode_word
 from calc import Calc
-from addTopic import lda_value
 from const import *
 from json_extend import json_dump
 
@@ -70,14 +69,14 @@ def is_not_match_report(company_type, company_shokushu):
     return False
 
 def calcSimSum(similarSumary):
-    if len(similarSumary) == 0:
-        simSum = 0
-    else:
-        simSum = np.sum(similarSumary[:,1].reshape(-1,).astype(np.float64))
+    simSum = 0.1
+    if len(similarSumary) > 0:
+        for similarity in similarSumary:
+            simSum += similarity
     return simSum
 
 def calcSimLog(simSum):
-    simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 10)
+    simLog = 0.0001 if math.log(simSum, 2) <= 0 else math.log(simSum, 2)
     return simLog * 1.2
 
 def is_few_words(parse_text):
@@ -98,25 +97,20 @@ def advice_to_json(recommend_dict, reports_values, word_count):
                 'report_no': report_no,
                 'recommend_level': str(round(primaryComp[1], DECIMAL_POINT)),
                 'words': reports_values[report_no]["word_and_similarity"],
-                'lda1': round(reports_values[report_no]["lda"][0], DECIMAL_POINT),
-                'lda2': round(reports_values[report_no]["lda"][1], DECIMAL_POINT),
             }
     advice_json['word_count'] = word_count
     advice_json['company_type'] = company_type_name
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
-def recommend_rate(reports_values, jsdDictionary):
+def recommend_rate(reports_values):
     compRecommendDic = {}
     for report_no in reports_values:
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
-        simSum = sum(reports_values[report_no]["similarities"])
+        simSum = calcSimSum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
-        if recommend_formula == 2:
-            recommend_rate = simSum + jsdDictionary[report_no] * (typeRate * shokushuRate)
-        else:
-            recommend_rate = simSum * (typeRate * shokushuRate)
+        recommend_rate = simSum * (typeRate * shokushuRate)
         compRecommendDic[report_no] = recommend_rate
     return compRecommendDic
 
@@ -127,6 +121,8 @@ def initialize_report_dict(advice_dictionary):
         reports_values[report_no] = {}
         reports_values[report_no]["similarities"] = []
         reports_values[report_no]["word_and_similarity"] = {}
+        reports_values[report_no]["type"] = None
+        reports_values[report_no]["shokushu"] = None
     return reports_values
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
@@ -134,8 +130,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
     results = get_similar_words(posi)
 
     wordCount = {} # 類似単語の出現回数
-    jsdDictionary = {} # 報告書ごとに入力とldaのtopic値を活用してjsd値を計算する
-    equation_lda_value = np.array(lda_value(equation, [posi])['topic']) # 入力値にLDAによるtopic値を付与する
 
     adDicts = load_reports()
     reports_values = initialize_report_dict(adDicts)
@@ -152,8 +146,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
             report_no = report["reportNo"]
-            if recommend_formula == 2:
-                jsdDictionary[report_no] = calc.jsd(equation_lda_value, np.array(report['topic']))
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             if similarWord in report['tfidf']:
                 similarity = report['tfidf'][similarWord] * cosineSimilarity
@@ -161,11 +153,9 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
                 similarity = cosineSimilarity
             if similarWord not in report['advice_divide_mecab']:
                 similarity = 0.0001
-
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
             reports_values[report_no]["shokushu"] = report["companyShokushu"]
-            reports_values[report_no]["lda"] = report["topic"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
@@ -173,12 +163,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     wordCount = clean_sort_dictionary(wordCount)
 
-    # jsdは非類似度が高いほど値が大きくなるので、値が大きいほど類似度が高くなるように修正
-    if recommend_formula == 2:
-        jsdDictionary = normalization(jsdDictionary)
-        jsdDictionary = calc.value_reverse(jsdDictionary)
-
-    recommendRateDict = recommend_rate(reports_values, jsdDictionary)
+    recommendRateDict = recommend_rate(reports_values)
     advice_json = advice_to_json(recommendRateDict, reports_values, wordCount)
 
     return json_dump(advice_json)
@@ -193,7 +178,6 @@ equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
-recommend_formula = int(sys.argv[6])
 
 if __name__=="__main__":
     similarReports = calc(equation)
