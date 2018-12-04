@@ -86,7 +86,7 @@ def allAdvise():
 
 def dictToPickle():
     advice = allAdvise()
-    with open("advice.pickle", "wb") as f:
+    with open("pickle/advice.pickle", "wb") as f:
         pickle.dump(advice, f)
 
 if __name__ == '__main__':
