@@ -8,14 +8,13 @@ import urllib.request
 from natto import MeCab
 import pickle
 import re
-import sys
 import numpy as np
+from tqdm import tqdm
+import os, sys
+sys.path.append("../")
 from const import WORD2VECMODELFILE
 from parse import parser_mecab
-import os
-from tqdm import tqdm
 
-ROOTPATH = os.path.dirname(os.path.abspath(__file__))
 model = Word2Vec.load(WORD2VECMODELFILE)
 
 def get_stop_word():
@@ -55,7 +54,7 @@ def document_norm(document):
 
 
 if __name__ == '__main__':
-    with open('./advice.pickle', 'rb') as f:
+    with open('../advice.pickle', 'rb') as f:
         reports = pickle.load(f)
 
     for index in tqdm(reports):
@@ -67,6 +66,6 @@ if __name__ == '__main__':
                     'vectorLength': vector_values['vectorLength']
                 })
 
-    with open('./advice_add_vector.pickle', 'wb') as f:
+    with open('../advice_add_vector.pickle', 'wb') as f:
         pickle.dump(reports, f)
 
