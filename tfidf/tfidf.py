@@ -152,10 +152,12 @@ def gensim_bm25(advice):
 
     return advice
 
-if __name__ == '__main__':
-    advice = load_pickle("../advice_2.pickle")
-    advice = gensim_tfidf(advice)
-    advice = gensim_bm25(advice)
 
-    dump_pickle(advice, 'advice_2_tfidf.pickle')
+print("Add tfidf")
+CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
+advice = load_pickle(CURRENTPATH+"/../pickle/advice_add_vector.pickle")
+advice = gensim_tfidf(advice)
+advice = gensim_bm25(advice)
+
+dump_pickle(advice, CURRENTPATH+'/../pickle/advice_add_tfidf.pickle')
 
