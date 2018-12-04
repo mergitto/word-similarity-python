@@ -8,6 +8,7 @@ import re
 from const import *
 import pickle
 from parse import *
+import os
 
 def connect_pg():
     conn = psycopg2.connect(
@@ -85,9 +86,11 @@ def allAdvise():
     return adviceDict
 
 def dictToPickle():
+    CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
     advice = allAdvise()
-    with open("pickle/advice.pickle", "wb") as f:
+    with open(CURRENTPATH+"/../pickle/advice.pickle", "wb") as f:
         pickle.dump(advice, f)
 
-if __name__ == '__main__':
-    dictToPickle()
+print("Get Advice")
+dictToPickle()
+
