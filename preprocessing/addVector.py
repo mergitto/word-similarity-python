@@ -11,9 +11,9 @@ import re
 import numpy as np
 from tqdm import tqdm
 import os, sys
-sys.path.append("../")
 from const import WORD2VECMODELFILE
 from parse import parser_mecab
+print("add vector")
 
 model = Word2Vec.load(WORD2VECMODELFILE)
 
@@ -53,19 +53,19 @@ def document_norm(document):
     return document
 
 
-if __name__ == '__main__':
-    with open('../advice.pickle', 'rb') as f:
-        reports = pickle.load(f)
+CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
+with open(CURRENTPATH+'/../advice.pickle', 'rb') as f:
+    reports = pickle.load(f)
 
-    for index in tqdm(reports):
-        report = reports[index]
-        document = document_norm(report['advice'])
-        vector_values = add_vector(document)
-        reports[index].update({
-                    'vectorSum': vector_values['vectorSum'],
-                    'vectorLength': vector_values['vectorLength']
-                })
+for index in tqdm(reports):
+    report = reports[index]
+    document = document_norm(report['advice'])
+    vector_values = add_vector(document)
+    reports[index].update({
+                'vectorSum': vector_values['vectorSum'],
+                'vectorLength': vector_values['vectorLength']
+            })
 
-    with open('../advice_add_vector.pickle', 'wb') as f:
-        pickle.dump(reports, f)
+with open(CURRENTPATH+'/../advice_add_vector.pickle', 'wb') as f:
+    pickle.dump(reports, f)
 
