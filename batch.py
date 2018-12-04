@@ -1,2 +1,2 @@
 from preprocessing import addVector
-from tfidf import tfidf
+from preprocessing import tfidf

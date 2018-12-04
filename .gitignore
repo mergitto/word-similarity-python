@@ -9,7 +9,6 @@ __pycache__
 /ldaModel/*
 /data/*
 /doc2vec/prototype.model
-/tfidf/*.pickle
 /verification/*.txt
 /verification/*/*.txt
 pluck_evaluation/
