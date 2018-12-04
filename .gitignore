@@ -1,7 +1,7 @@
 /const.py
 __pycache__
 /*.pickle
-/pickle/
+/pickle/*.pickle
 /model/*.model
 /model/webdb/*
 /model/sugoole-juman.model
