@@ -56,17 +56,17 @@ def document_norm(document):
 
 if __name__ == '__main__':
     with open('./advice.pickle', 'rb') as f:
-        sugAd = pickle.load(f)
+        reports = pickle.load(f)
 
-    for index in tqdm(sugAd):
-        report = sugAd[index]
+    for index in tqdm(reports):
+        report = reports[index]
         document = document_norm(report['advice'])
         vector_values = add_vector(document)
-        sugAd[index].update({
+        reports[index].update({
                     'vectorSum': vector_values['vectorSum'],
                     'vectorLength': vector_values['vectorLength']
                 })
 
     with open('./advice_add_vector.pickle', 'wb') as f:
-        pickle.dump(sugAd, f)
+        pickle.dump(reports, f)
 
