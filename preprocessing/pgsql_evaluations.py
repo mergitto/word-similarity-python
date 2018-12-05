@@ -27,7 +27,7 @@ def get_evaluations():
     for index, row in enumerate(dict_cur):
         evaluation = dict(row)
         print(round(index / select_count * 100, 3), "%")
-        evaluationDict[evaluation["report_no"]] = evaluation
+        evaluationDict[index] = evaluation
     return evaluationDict
 
 def dictToPickle():

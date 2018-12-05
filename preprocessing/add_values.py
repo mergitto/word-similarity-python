@@ -110,7 +110,6 @@ class AddValues():
 
             score_df = st_no_df.score
             score_values = list(set(list(st_no_df.score)))
-            if len(score_values) <= 10: continue
             for i in st_no_df.iterrows():
                 series = i[1]
                 score_min_max = ( series.score - score_df.min() ) / ( score_df.max() - score_df.min() )
@@ -121,17 +120,19 @@ class AddValues():
                 series["score_std"] = score_std
                 df = df.append(series, ignore_index=True)
 
-        report_nombers = list(df.report_no)
+        report_numbers = list(df.report_no)
         copy_eval = self.evaluations.copy()
         for index in copy_eval:
             c_eval = copy_eval[index]
-            if c_eval["report_no"] not in report_nombers:
-                del self.evaluations[c_eval["report_no"]]
+            if c_eval["report_no"] not in report_numbers:
+                del self.evaluations[index]
 
-        for eval_df in df.iterrows():
-            eval_df = eval_df[1]
-            self.evaluations[eval_df.report_no]["score_std"] = eval_df.score_std
-            self.evaluations[eval_df.report_no]["score_min_max"] = eval_df.score_min_max
+        for index in self.evaluations:
+            c_report = self.evaluations[index]
+            match_df = df[df["evaluation_id"] == c_report["evaluation_id"]]
+            match_df =  match_df.iloc[-1]
+            c_report["score_std"] = match_df.score_std
+            c_report["score_min_max"] = match_df.score_min_max
 
     def perfect_check(self, target, keywords):
         is_in = False
@@ -165,8 +166,9 @@ class AddValues():
             current_data["similarity_sum"] = similarity["sum"]
 
     def add_values(self):
-        for report_no in self.evaluations:
-            c_eval = self.evaluations[report_no]
+        for i in self.evaluations:
+            c_eval = self.evaluations[i]
+            report_no_c_eval = c_eval["report_no"]
             add_key_list = [
                     "advice", "advice_divide_mecab", "tfidf_top_average", "tfidf_sum",
                     "bm25", "bm25_sum", "bm25_average", "report_created_date",
@@ -174,7 +176,7 @@ class AddValues():
                 ]
             for index in self.reports:
                 c_report = self.reports[index]
-                if c_report["reportNo"] == report_no:
+                if c_report["reportNo"] == report_no_c_eval:
                     for key in add_key_list:
                         c_eval[key] = c_report[key]
 
@@ -215,4 +217,5 @@ add_values = AddValues()
 add_values.add_columns()
 add_values.score_norm()
 add_values.dump_pickle(dump_path=CURRENTPATH+"/../pickle/evaluations_add_values.pickle")
+print("AddValues finished!")
 
