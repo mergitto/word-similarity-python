@@ -5,3 +5,4 @@ from preprocessing import tfidf
 
 # 機械学習による前学習用のバッチ処理
 from preprocessing import pgsql_evaluations
+from preprocessing import add_values
