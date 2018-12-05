@@ -22,6 +22,10 @@ class AddValues():
             pickle_data = pickle.load(f)
         return pickle_data
 
+    def dump_pickle(self, dump_path=""):
+        with open(dump_path, "wb") as f:
+            pickle.dump(self.evaluations, f)
+
     def load_word2vec_model(self, model_file_name):
         from gensim.models import word2vec
         return word2vec.Word2Vec.load(model_file_name)
@@ -206,8 +210,9 @@ class AddValues():
                 pass
         return results
 
+print("AddValues")
 add_values = AddValues()
 add_values.add_columns()
 add_values.score_norm()
-#df.to_csv('questionnaire_all_evaluations_preprocessed_from_20181030.csv', index=None)
+add_values.dump_pickle(dump_path=CURRENTPATH+"/../pickle/evaluations_add_values.pickle")
 
