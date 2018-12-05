@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor
 class Tree():
     def __init__(self, pickle_data):
         self.df = pd.DataFrame.from_dict(pickle_data).T
+        self.pickle_data = pickle_data
         self.X = pd.DataFrame()
         self.y = pd.DataFrame()
         self.class_names = []
