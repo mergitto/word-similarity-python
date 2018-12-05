@@ -51,6 +51,32 @@ class Tree():
         print(score)
         self.cross_validation(max_depth=max_depth)
         self.grid_search()
+        self.precision_recall_curve(clf, y_test, X_test_std)
+        self.auc_curve(clf, y_test, X_test_std)
+
+    def precision_recall_curve(self, clf, y_test, X_test):
+        from sklearn.metrics import precision_recall_curve
+        precision, recall, thresholds = precision_recall_curve(y_test, clf.predict_proba(X_test)[:, 1])
+        plt.subplot(1, 2, 1)
+        plt.step(recall, precision, color='black', where='post')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.ylim([0.0, 1.05])
+        plt.xlim([0.0, 1.0])
+
+    def auc_curve(self, clf, y_test, X_test):
+        from sklearn.metrics import roc_curve
+        from sklearn.metrics import auc
+        fpr, tpr, _ = roc_curve(y_test, clf.predict_proba(X_test)[:, 1])
+        print("auc :", auc(fpr, tpr))
+        plt.subplot(1, 2, 2)
+        plt.step(fpr, tpr, color='b', alpha=0.2, where='post')
+        plt.fill_between(fpr, tpr, step='post', alpha=0.2, color='b')
+        plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+        plt.ylabel('True Positive Rate')
+        plt.xlabel('False Positive Rate')
+        plt.ylim([0.0, 1.0])
+        plt.xlim([0.0, 1.0])
 
     def cross_validation(self, max_depth=2):
         from sklearn.model_selection import cross_val_score
