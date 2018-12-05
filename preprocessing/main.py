@@ -33,6 +33,7 @@ tree.set_X_and_y(objective_key="score_dummy")
 
 max_depth = 4
 tree.random_forest(max_depth=4)
+tree.save_model(save_model_name=CURRENTPATH+"/../pickle/random_forest.model")
 print("Create RandomForestModel finished!")
 
 

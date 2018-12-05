@@ -15,6 +15,7 @@ class Tree():
         self.X = pd.DataFrame()
         self.y = pd.DataFrame()
         self.class_names = []
+        self.clf = ""
 
     def drop_na(self, drop_na_list=[]):
         self.df = self.df.dropna(subset=drop_na_list)
@@ -35,12 +36,33 @@ class Tree():
         X_test_std = sc.transform(X_test)
         return X_train_std, X_test_std
 
+    def add_predicted(self, clf):
+        X_std,X_dummy_std = self.std_X(self.X, self.X)
+        predicted = clf.predict(X_std)
+        y_list = list(self.y)
+        count = 0
+        for index, value in enumerate(y_list):
+            if predicted[index] == y_list[index]:
+                count += 1
+        print("正解率({}): ".format(len(y_list)),count / len(y_list))
+
+    def save_model(self, save_model_name):
+        import pickle
+        with open(save_model_name, 'wb') as f:
+            pickle.dump(self.clf, f)
+
+    def load_model(self, load_model_name):
+        import pickle
+        with open(load_model_name, 'rb') as f:
+            self.clf = pickle.load(f)
+
     def random_forest(self, random_state=0, max_depth=2):
         print("======= random_forest_classifier:max_depth={} ======".format(max_depth))
         X_train, X_test, y_train, y_test = self.train_test_data_split(random_state=random_state, test_size=0.3)
         X_train_std, X_test_std = self.std_X(X_train, X_test)
         clf = self.get_model(clf_name="random_forest", max_depth=max_depth)
         clf.fit(X_train_std, y_train)
+        self.clf = clf
         print(self.X.keys())
         print('テストデータ：Confusion matrix:\n{}'.format(confusion_matrix(y_test, clf.predict(X_test_std))))
         self.f1_value(y_test, clf.predict(X_test_std))
@@ -50,6 +72,7 @@ class Tree():
                 'test': metrics.accuracy_score(y_test, clf.predict(X_test_std))
             }
         print(score)
+        self.add_predicted(clf)
         self.cross_validation(max_depth=max_depth)
         self.grid_search()
         self.precision_recall_curve(clf, y_test, X_test_std)
