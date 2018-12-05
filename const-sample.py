@@ -9,6 +9,9 @@ sql = ""
 SQL = {
     "QUERY": sql,
 }
+SQL_EVALUATIONS = {
+    "QUERY": "",
+}
 PATH = {
     # 分かち書きしたcsvファイルを指定する(mecab, jumanpp)
     "WAKACHI": "",
