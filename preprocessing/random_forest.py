@@ -51,11 +51,6 @@ class Tree():
         with open(save_model_name, 'wb') as f:
             pickle.dump(self.clf, f)
 
-    def load_model(self, load_model_name):
-        import pickle
-        with open(load_model_name, 'rb') as f:
-            self.clf = pickle.load(f)
-
     def random_forest(self, random_state=0, max_depth=2):
         print("======= random_forest_classifier:max_depth={} ======".format(max_depth))
         X_train, X_test, y_train, y_test = self.train_test_data_split(random_state=random_state, test_size=0.3)
