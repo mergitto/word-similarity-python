@@ -25,6 +25,7 @@ drop_list = [
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 evaluations_data = load_pickle(load_file_name=CURRENTPATH+"/../pickle/evaluations_add_values.pickle")
 
+print("Create RandomForestModel")
 tree = Tree(evaluations_data)
 tree.add_dummy_score(high_report_rate=0.4)
 tree.drop_columns(drop_list)
@@ -32,5 +33,6 @@ tree.set_X_and_y(objective_key="score_dummy")
 
 max_depth = 4
 tree.random_forest(max_depth=4)
+print("Create RandomForestModel finished!")
 
 
