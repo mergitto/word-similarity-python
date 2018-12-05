@@ -5,10 +5,4 @@ __pycache__
 /model/*.model
 /model/webdb/*
 /model/sugoole-juman.model
-/output/*
-/ldaModel/*
-/data/*
-/doc2vec/prototype.model
-/verification/*.txt
-/verification/*/*.txt
 pluck_evaluation/
