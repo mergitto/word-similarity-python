@@ -8,14 +8,12 @@ from parse import parser_mecab
 from preprocessing.tfidf import *
 from replace import change_word, decode_word
 
-CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
-
 class AddValues():
-    def __init__(self):
-        self.CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
+    def __init__(self, CURRENTPATH=""):
+        self.CURRENTPATH = CURRENTPATH
         self.reports = self.load_pickle(load_path=CURRENTPATH+"/../pickle/advice_add_tfidf.pickle")
         self.evaluations = self.load_pickle(load_path=CURRENTPATH+"/../pickle/evaluations.pickle")
-        self.word2vecModel = self.load_word2vec_model(model_file_name=CURRENTPATH+"/../model/webdb/cpf/0_cpf.model")
+        self.word2vecModel = self.load_word2vec_model(model_file_name=WORD2VECMODELFILE)
 
     def load_pickle(self, load_path=""):
         with open(load_path, "rb") as f:
@@ -222,7 +220,9 @@ class AddValues():
         return results
 
 print("AddValues")
-add_values = AddValues()
+CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
+
+add_values = AddValues(CURRENTPATH=CURRENTPATH)
 add_values.add_columns()
 add_values.score_norm()
 add_values.dump_pickle(dump_data=add_values.evaluations ,dump_path=CURRENTPATH+"/../pickle/evaluations_add_values.pickle")
