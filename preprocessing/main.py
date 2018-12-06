@@ -47,4 +47,9 @@ all_reports_with_predicted = tree.add_predicted(clf=clf, pickle_data=all_reports
 dump_pickle(all_reports_with_predicted, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
 print("Add Predicted Finished!")
 
+print("Get Importances")
+importance_dict = tree.clf_importance(tree.X, tree.clf)
+dump_pickle(importance_dict, dump_file_name=CURRENTPATH+"/../pickle/importance_dict.pickle")
+print("Get Importances Finished!")
+
 

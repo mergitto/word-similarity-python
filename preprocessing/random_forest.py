@@ -58,6 +58,15 @@ class Tree():
         with open(load_model_name, 'rb') as f:
             return pickle.load(f)
 
+    def clf_importance(self, X, clf):
+        # 各項目における重要度を辞書型で取得
+        importance_dict = {}
+        from pprint import pprint
+        for index, importance in enumerate(clf.feature_importances_):
+            importance_dict[X.columns[index]] = importance
+        return importance_dict
+
+
     def random_forest(self, random_state=0, max_depth=2):
         print("======= random_forest_classifier:max_depth={} ======".format(max_depth))
         X_train, X_test, y_train, y_test = self.train_test_data_split(random_state=random_state, test_size=0.3)
