@@ -17,6 +17,7 @@ PATH = {
     "WAKACHI": "",
     # 報告書の情報を詰め込んだやつ(addTopic.pyのトピック数と合わせなければならない)
     "REPORTS_PICKELE": "",
+    "IMPORTANCES_PICKELE": ROOTPATH+"/pickle/importance_dict.pickle",
 }
 
 SIMILARYTY_LIMIT_RATE = 0.50 # 類似度を設定する
