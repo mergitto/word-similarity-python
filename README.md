@@ -10,6 +10,5 @@ word2vecなどで単語同士の類似度をコサイン類似度から計算す
 ## 手順
 1. `cp ./const-sample.py ./const.py`
 1. const.pyの設定をする（postgresqlとsql,LDA学習のために利用する分かち書き文書）
-1. `python pgsql.py` データベースから報告書の情報をpickleで出力する
 1. `python batch.py` 前処理でデータを追加する処理を実行
 

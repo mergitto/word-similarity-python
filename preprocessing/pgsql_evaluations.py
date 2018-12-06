@@ -21,12 +21,9 @@ def connect_pg():
 def get_evaluations():
     dict_cur = connect_pg()
     dict_cur.execute(SQL_EVALUATIONS["QUERY"])
-    select_count = len(dict_cur.fetchall())
-    dict_cur.execute(SQL_EVALUATIONS["QUERY"])
     evaluationDict = {}
     for index, row in enumerate(dict_cur):
         evaluation = dict(row)
-        print(round(index / select_count * 100, 3), "%")
         evaluationDict[index] = evaluation
     return evaluationDict
 
@@ -36,6 +33,7 @@ def dictToPickle():
     with open(CURRENTPATH+"/../pickle/evaluations.pickle", "wb") as f:
         pickle.dump(evaluations, f)
 
-print("Get Advice")
+print("Get Evaluations")
 dictToPickle()
+print("Get Evaluations Finished!")
 
