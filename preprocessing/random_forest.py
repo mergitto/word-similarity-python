@@ -45,7 +45,7 @@ class Tree():
         X_list = df[self.pluck_list]
         X_std,X_dummy_std = self.std_X(X_list, X_list)
         predicted = clf.predict(X_std)
-        df["predicted"] = [int(i) for i in predicted]
+        df["is_high_predicted"] = [int(i) for i in predicted]
         return df.T.to_dict()
 
     def save_model(self, save_model_name):
@@ -154,8 +154,8 @@ class Tree():
         high_rate = int(df_size * high_report_rate)
         threshold = tmp_df[:high_rate].iloc[-1].score_std
         print("正規化後の閾値: ", threshold)
-        self.df.loc[self.df["score_std"] >= threshold, "score_dummy"] = 0 # High
-        self.df.loc[self.df["score_std"] < threshold, "score_dummy"] = 1 # Low
+        self.df.loc[self.df["score_std"] >= threshold, "score_dummy"] = 1 # High
+        self.df.loc[self.df["score_std"] < threshold, "score_dummy"] = 0 # Low
         self.class_names = ["high", "low"]
 
     def f1_value(self, true_score, predicted_score):
