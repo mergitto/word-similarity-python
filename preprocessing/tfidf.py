@@ -73,9 +73,6 @@ def gensim_tfidf(advice):
     dump_pickle(corpus_tfidf, 'corpus_tfidf.pickle')
 
     for index, corpus_of_each_text in enumerate(corpus):
-        if index % 10 == 0:
-            print("進捗度: ", str(round((index+1) / len(corpus) * 100, 2)), '%')
-
         current_advice = advice[index]
         current_advice['tfidf'] = {}
         current_corpus_tfidf = corpus_tfidf[index]
@@ -160,4 +157,5 @@ advice = gensim_tfidf(advice)
 advice = gensim_bm25(advice)
 
 dump_pickle(advice, CURRENTPATH+'/../pickle/advice_add_tfidf.pickle')
+print("Add tfidf Finished!")
 

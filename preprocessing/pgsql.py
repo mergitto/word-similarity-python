@@ -55,13 +55,10 @@ def clensing(text):
 
 def allAdvise():
     dict_cur = connect_pg()
-    dict_cur.execute(SQL["QUERY"])
     adviceDict = {}
-    select_count = len(dict_cur.fetchall())
     dict_cur.execute(SQL["QUERY"])
     for index, row in enumerate(dict_cur):
         report = dict(row)
-        print(round(index / select_count * 100, 3), "%")
         if report["advice"] != None:
             report["advice"] = clensing(report["advice"])
         else:
@@ -93,4 +90,5 @@ def dictToPickle():
 
 print("Get Advice")
 dictToPickle()
+print("Get Advice Finished!")
 
