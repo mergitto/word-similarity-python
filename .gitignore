@@ -1,14 +1,9 @@
 /const.py
 __pycache__
 /*.pickle
+/pickle/*.pickle
+/pickle/*.model
 /model/*.model
 /model/webdb/*
 /model/sugoole-juman.model
-/output/*
-/ldaModel/*
-/data/*
-/doc2vec/prototype.model
-/tfidf/*.pickle
-/verification/*.txt
-/verification/*/*.txt
 pluck_evaluation/
