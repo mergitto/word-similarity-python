@@ -16,10 +16,9 @@ drop_list = [
         "keywords", "modified", "score", "score_min_max", "search_word",
         "search_word_wakati", "st_no",
         "most_highest_similarity", "is_good", "recommend_formula", "evaluation_id", "report_no",
-        "similarity_sum", "report_created_datetime",
-        #'count_selection', 'diff_date', 'first_final_diff_days',
-        #'identification_word_count', 'is_match_keywords',
-        #'recommend_rank', 'tfidf_sum', 'word_length'
+        "similarity_sum", "report_created_datetime", "is_match_keywords", "recommend_rank",
+        #'count_selection', 'today_created_diff_days, 'first_final_diff_days',
+        #'identification_word_count', 'tfidf_sum', 'word_length', 'word_count',
     ] # 不必要なカラム
 
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
