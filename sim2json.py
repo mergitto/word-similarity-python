@@ -180,6 +180,7 @@ equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
+recommend_formula = sys.argv[6]
 
 if __name__=="__main__":
     similarReports = calc(equation)
