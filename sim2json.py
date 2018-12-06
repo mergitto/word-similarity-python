@@ -102,11 +102,15 @@ def advice_to_json(recommend_dict, reports_values, word_count):
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
-def recommend_rate(reports_values, reports):
+def clf_importance_rate(report):
     importances = load_pickle(load_pickle_name=PATH["IMPORTANCES_PICKELE"])
+    #for importance in importances:
+    #    print([importance, report[importance], importances[importance]])
 
+def recommend_rate(reports_values, reports):
     compRecommendDic = {}
     for report_no in reports_values:
+        clf_importance_rate(reports[report_no])
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         simSum = calcSimSum(reports_values[report_no]["similarities"])
@@ -143,11 +147,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         cosineSimilarity = word_and_similarity[1]
         wordCount[similarWord] = 0
         if not is_noun(similarWord): continue
-        for index in reports:
-            report = reports[index]
+        for report_no in reports:
+            report = reports[report_no]
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
-            report_no = report["reportNo"]
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             if similarWord in report['tfidf']:
                 similarity = report['tfidf'][similarWord] * cosineSimilarity
