@@ -16,6 +16,7 @@ class Tree():
         self.y = pd.DataFrame()
         self.class_names = []
         self.clf = ""
+        self.pluck_list = []
 
     def drop_na(self, drop_na_list=[]):
         self.df = self.df.dropna(subset=drop_na_list)
@@ -23,6 +24,7 @@ class Tree():
     def set_X_and_y(self, objective_key=""):
         self.X = self.df.drop(objective_key, axis=1)
         self.y = self.df[objective_key].astype(int)
+        self.pluck_list = list(self.X)
 
     def train_test_data_split(self, random_state=1, test_size=0.3):
         from sklearn.model_selection import train_test_split
@@ -36,20 +38,23 @@ class Tree():
         X_test_std = sc.transform(X_test)
         return X_train_std, X_test_std
 
-    def add_predicted(self, clf):
-        X_std,X_dummy_std = self.std_X(self.X, self.X)
+    def add_predicted(self, clf=None, pickle_data=None):
+        df = pd.DataFrame.from_dict(pickle_data).T
+        X_list = df[self.pluck_list]
+        X_std,X_dummy_std = self.std_X(X_list, X_list)
         predicted = clf.predict(X_std)
-        y_list = list(self.y)
-        count = 0
-        for index, value in enumerate(y_list):
-            if predicted[index] == y_list[index]:
-                count += 1
-        print("正解率({}): ".format(len(y_list)),count / len(y_list))
+        df["predicted"] = [int(i) for i in predicted]
+        return df.T.to_dict()
 
     def save_model(self, save_model_name):
         import pickle
         with open(save_model_name, 'wb') as f:
             pickle.dump(self.clf, f)
+
+    def load_model(self, load_model_name):
+        import pickle
+        with open(load_model_name, 'rb') as f:
+            return pickle.load(f)
 
     def random_forest(self, random_state=0, max_depth=2):
         print("======= random_forest_classifier:max_depth={} ======".format(max_depth))
@@ -67,7 +72,6 @@ class Tree():
                 'test': metrics.accuracy_score(y_test, clf.predict(X_test_std))
             }
         print(score)
-        self.add_predicted(clf)
         self.cross_validation(max_depth=max_depth)
         self.grid_search()
         self.precision_recall_curve(clf, y_test, X_test_std)

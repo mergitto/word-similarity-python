@@ -3,9 +3,13 @@ import pickle
 from preprocessing.random_forest import Tree
 import os
 
-def load_pickle(load_file_name=""):
+def load_pickle(load_file_name=None):
     with open(load_file_name, 'rb') as f:
         return pickle.load(f)
+
+def dump_pickle(dump_data, dump_file_name=None):
+    with open(dump_file_name, 'wb') as f:
+        pickle.dump(dump_data, f)
 
 drop_list = [
         "report_created_date", "bm25_sum", "bm25", "advice",
@@ -35,5 +39,12 @@ max_depth = 4
 tree.random_forest(max_depth=4)
 tree.save_model(save_model_name=CURRENTPATH+"/../pickle/random_forest.model")
 print("Create RandomForestModel finished!")
+
+print("Add Predicted Start")
+clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/random_forest.model")
+all_reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_values_for_machine_learning.pickle")
+all_reports_with_predicted = tree.add_predicted(clf=clf, pickle_data=all_reports)
+dump_pickle(all_reports_with_predicted, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
+print("Add Predicted Finished!")
 
 
