@@ -110,7 +110,7 @@ def recommend_rate(reports_values):
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         simSum = calcSimSum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
-        recommend_rate = simSum * (typeRate * shokushuRate)
+        recommend_rate = simSum * (typeRate * shokushuRate) + reports_values[report_no]["predicted"]
         compRecommendDic[report_no] = recommend_rate
     return compRecommendDic
 
@@ -123,6 +123,7 @@ def initialize_report_dict(advice_dictionary):
         reports_values[report_no]["word_and_similarity"] = {}
         reports_values[report_no]["type"] = None
         reports_values[report_no]["shokushu"] = None
+        reports_values[report_no]["predicted"] = 0
     return reports_values
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
@@ -156,6 +157,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
             reports_values[report_no]["shokushu"] = report["companyShokushu"]
+            reports_values[report_no]["predicted"] = report["predicted"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
@@ -178,6 +180,7 @@ equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
+recommend_formula = sys.argv[6]
 
 if __name__=="__main__":
     similarReports = calc(equation)
