@@ -22,9 +22,9 @@ class AddValues():
             pickle_data = pickle.load(f)
         return pickle_data
 
-    def dump_pickle(self, dump_path=""):
+    def dump_pickle(self, dump_data=None, dump_path=""):
         with open(dump_path, "wb") as f:
-            pickle.dump(self.evaluations, f)
+            pickle.dump(dump_data, f)
 
     def load_word2vec_model(self, model_file_name):
         from gensim.models import word2vec
@@ -165,6 +165,15 @@ class AddValues():
             current_data["most_highest_similarity"] = similarity["top"]
             current_data["similarity_sum"] = similarity["sum"]
 
+        for index in self.reports:
+            current_report = self.reports[index]
+            current_report["count_selection"] = self.date_pluck(current_report["report_created_date"])
+            current_report["today_created_diff_days"] = self.diff_days_from_now(current_report["report_created_date"])
+            current_report["first_final_diff_days"] = self.oral_first_final_diff_days(current_report)
+            current_report["identification_word_count"] = self.count_identification(current_report["advice_divide_mecab"])
+            current_report["word_length"] = len(current_report["advice"])
+            current_report["word_count"] = len(current_report["advice_divide_mecab"])
+
     def add_values(self):
         for i in self.evaluations:
             c_eval = self.evaluations[i]
@@ -216,6 +225,7 @@ print("AddValues")
 add_values = AddValues()
 add_values.add_columns()
 add_values.score_norm()
-add_values.dump_pickle(dump_path=CURRENTPATH+"/../pickle/evaluations_add_values.pickle")
+add_values.dump_pickle(dump_data=add_values.evaluations ,dump_path=CURRENTPATH+"/../pickle/evaluations_add_values.pickle")
+add_values.dump_pickle(dump_data=add_values.reports,dump_path=CURRENTPATH+"/../pickle/advice_add_values_for_machine_learning.pickle")
 print("AddValues finished!")
 
