@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix
