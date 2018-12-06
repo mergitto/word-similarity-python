@@ -156,6 +156,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
             reports_values[report_no]["shokushu"] = report["companyShokushu"]
+            reports_values[report_no]["predicted"] = report["predicted"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
