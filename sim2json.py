@@ -102,7 +102,9 @@ def advice_to_json(recommend_dict, reports_values, word_count):
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
-def recommend_rate(reports_values):
+def recommend_rate(reports_values, reports):
+    importances = load_pickle(load_pickle_name=PATH["IMPORTANCES_PICKELE"])
+
     compRecommendDic = {}
     for report_no in reports_values:
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
@@ -164,7 +166,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     wordCount = clean_sort_dictionary(wordCount)
 
-    recommendRateDict = recommend_rate(reports_values)
+    recommendRateDict = recommend_rate(reports_values, reports)
     advice_json = advice_to_json(recommendRateDict, reports_values, wordCount)
 
     return json_dump(advice_json)
