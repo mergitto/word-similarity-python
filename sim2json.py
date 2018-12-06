@@ -57,10 +57,9 @@ def get_similar_words(inputWord):
             pass
     return results
 
-def load_reports():
-    with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
-        adDicts = pickle.load(f)
-    return adDicts
+def load_pickle(load_pickle_name=None):
+    with open(load_pickle_name, 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
+        return pickle.load(f)
 
 def is_not_match_report(company_type, company_shokushu):
     if det_check == "1":
@@ -132,8 +131,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     wordCount = {} # 類似単語の出現回数
 
-    adDicts = load_reports()
-    reports_values = initialize_report_dict(adDicts)
+    reports = load_pickle(load_pickle_name=PATH["REPORTS_PICKELE"])
+    reports_values = initialize_report_dict(reports)
 
     calc = Calc()
 
@@ -142,8 +141,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         cosineSimilarity = word_and_similarity[1]
         wordCount[similarWord] = 0
         if not is_noun(similarWord): continue
-        for index in adDicts:
-            report = adDicts[index]
+        for index in reports:
+            report = reports[index]
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
             report_no = report["reportNo"]
