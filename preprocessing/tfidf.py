@@ -62,6 +62,13 @@ def add_tfidf_top_10_average(current_advice):
     current_advice['tfidf_top_average'] = tfidf_average
     return current_advice
 
+def index_to_report_no(advice):
+    advice_index_to_report_no = {}
+    for index in advice:
+        report = advice[index]
+        advice_index_to_report_no[report["reportNo"]] = report
+    return advice_index_to_report_no
+
 def gensim_tfidf(advice):
     frequency, texts = counter(advice)
 
@@ -155,6 +162,7 @@ CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 advice = load_pickle(CURRENTPATH+"/../pickle/advice_add_vector.pickle")
 advice = gensim_tfidf(advice)
 advice = gensim_bm25(advice)
+advice = index_to_report_no(advice)
 
 dump_pickle(advice, CURRENTPATH+'/../pickle/advice_add_tfidf.pickle')
 print("Add tfidf Finished!")
