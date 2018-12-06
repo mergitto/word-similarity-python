@@ -28,6 +28,7 @@ evaluations_data = load_pickle(load_file_name=CURRENTPATH+"/../pickle/evaluation
 print("Create RandomForestModel")
 tree = Tree(evaluations_data)
 tree.add_dummy_score(high_report_rate=0.4)
+tree.drop_na(drop_na_list=["score", "recommend_rank"])
 tree.drop_columns(drop_list)
 tree.set_X_and_y(objective_key="score_dummy")
 
