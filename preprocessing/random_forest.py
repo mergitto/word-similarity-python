@@ -156,7 +156,8 @@ class Tree():
         print("正規化後の閾値: ", threshold)
         self.df.loc[self.df["score_std"] >= threshold, "score_dummy"] = 1 # High
         self.df.loc[self.df["score_std"] < threshold, "score_dummy"] = 0 # Low
-        self.class_names = ["high", "low"]
+        print("高評価の報告書数: {}, 低評価の報告書数: {}".format(len(self.df[self.df["score_dummy"] == 1]), len(self.df[self.df["score_dummy"] == 0])))
+        self.class_names = ["low", "high"]
 
     def f1_value(self, true_score, predicted_score):
         from sklearn.metrics import classification_report
