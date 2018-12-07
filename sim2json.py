@@ -102,20 +102,14 @@ def advice_to_json(recommend_dict, reports_values, word_count):
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
-def clf_importance_rate(report):
-    importances = load_pickle(load_pickle_name=PATH["IMPORTANCES_PICKELE"])
-    #for importance in importances:
-    #    print([importance, report[importance], importances[importance]])
-
 def recommend_rate(reports_values, reports):
     compRecommendDic = {}
     for report_no in reports_values:
-        clf_importance_rate(reports[report_no])
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         simSum = calcSimSum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
-        recommend_rate = simSum * (typeRate * shokushuRate) + reports_values[report_no]["predicted"]
+        recommend_rate = simSum * (typeRate * shokushuRate) + reports_values[report_no]["is_high_predicted"]
         compRecommendDic[report_no] = recommend_rate
     return compRecommendDic
 
@@ -128,7 +122,7 @@ def initialize_report_dict(advice_dictionary):
         reports_values[report_no]["word_and_similarity"] = {}
         reports_values[report_no]["type"] = None
         reports_values[report_no]["shokushu"] = None
-        reports_values[report_no]["predicted"] = 0
+        reports_values[report_no]["is_high_predicted"] = 0
     return reports_values
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
@@ -161,7 +155,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
             reports_values[report_no]["shokushu"] = report["companyShokushu"]
-            reports_values[report_no]["predicted"] = report["predicted"]
+            reports_values[report_no]["is_high_predicted"] = report["is_high_predicted"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
