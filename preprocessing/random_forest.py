@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
+from calc import Calc
 
 class Tree():
     def __init__(self, pickle_data):
@@ -32,9 +33,9 @@ class Tree():
         from sklearn.model_selection import train_test_split
         return train_test_split(self.X, self.y,random_state=random_state, test_size=test_size)
 
-    def std_X(self, X_train, X_test):
+    def std_X(self, X_train, X_test, with_mean=True):
         # データの標準化処理
-        sc = StandardScaler()
+        sc = StandardScaler(with_mean=with_mean)
         sc.fit(X_train)
         X_train_std = sc.transform(X_train)
         X_test_std = sc.transform(X_test)
@@ -46,6 +47,24 @@ class Tree():
         X_std,X_dummy_std = self.std_X(X_list, X_list)
         predicted = clf.predict(X_std)
         df["is_high_predicted"] = [int(i) for i in predicted]
+        return df.T.to_dict()
+
+    def add_importances_rate(self, importances=None, pickle_data=None):
+        calc = Calc()
+        df = pd.DataFrame.from_dict(pickle_data).T
+        df_importances = df.loc[:, importances]
+        numpy_std,_  = self.std_X(df_importances, df_importances, with_mean=False)
+        df_std = pd.DataFrame(numpy_std, index=df_importances.index, columns=df_importances.columns)
+        feature_importances_rate_list = []
+        for i in df_std.iterrows():
+            report_no, values = i
+            feature_importances_rate_list.append(
+                    # 各報告書ごとに特徴の重要度を掛け合わせて足し算する（この時、各値は↑でscaleさせた値を使用）
+                    sum([values[importance] * importances[importance] for importance in importances])
+                )
+        im_std = [calc.normalization(f_i, feature_importances_rate_list) for f_i in feature_importances_rate_list]
+        df["feature_importance_rate"] = feature_importances_rate_list
+        df["feature_importance_rate_std"] = im_std
         return df.T.to_dict()
 
     def save_model(self, save_model_name):
