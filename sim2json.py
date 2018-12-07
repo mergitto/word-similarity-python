@@ -175,13 +175,15 @@ def calc(equation):
     words = parser_mecab(equation)
     return neighbor_word(words, inputText=equation)
 
+def is_karamozi(word):
+    return not word
 
 model = word2vec.Word2Vec.load(sys.argv[1])
 equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
-recommend_formula = int(sys.argv[6])
+recommend_formula = 0 if is_karamozi(sys.argv[6]) else int(sys.argv[6])
 
 if __name__=="__main__":
     similarReports = calc(equation)
