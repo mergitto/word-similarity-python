@@ -109,7 +109,12 @@ def recommend_rate(reports_values, reports):
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         simSum = calcSimSum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
-        recommend_rate = simSum * (typeRate * shokushuRate) + reports_values[report_no]["is_high_predicted"]
+        if recommend_formula == 1:
+            recommend_rate = simSum * (typeRate * shokushuRate) + reports[report_no]["is_high_predicted"]
+        elif recommend_formula == 2:
+            recommend_rate = simSum * (typeRate * shokushuRate) + reports[report_no]["feature_importance_rate_std"]
+        else:
+            recommend_rate = simSum * (typeRate * shokushuRate)
         compRecommendDic[report_no] = recommend_rate
     return compRecommendDic
 
@@ -122,7 +127,6 @@ def initialize_report_dict(advice_dictionary):
         reports_values[report_no]["word_and_similarity"] = {}
         reports_values[report_no]["type"] = None
         reports_values[report_no]["shokushu"] = None
-        reports_values[report_no]["is_high_predicted"] = 0
     return reports_values
 
 def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
@@ -155,7 +159,6 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
             reports_values[report_no]["similarities"].append(similarity)
             reports_values[report_no]["type"] = report["companyType"]
             reports_values[report_no]["shokushu"] = report["companyShokushu"]
-            reports_values[report_no]["is_high_predicted"] = report["is_high_predicted"]
 
             if similarWord not in report['advice_divide_mecab']: continue
             wordCount[similarWord] += 1
@@ -178,7 +181,7 @@ equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
-recommend_formula = sys.argv[6]
+recommend_formula = int(sys.argv[6])
 
 if __name__=="__main__":
     similarReports = calc(equation)
