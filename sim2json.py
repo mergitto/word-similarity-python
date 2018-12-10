@@ -57,10 +57,9 @@ def get_similar_words(inputWord):
             pass
     return results
 
-def load_reports():
-    with open(PATH["REPORTS_PICKELE"], 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
-        adDicts = pickle.load(f)
-    return adDicts
+def load_pickle(load_pickle_name=None):
+    with open(load_pickle_name, 'rb') as f: # トピック分類の情報を付加したデータをpickleでロード
+        return pickle.load(f)
 
 def is_not_match_report(company_type, company_shokushu):
     if det_check == "1":
@@ -103,14 +102,19 @@ def advice_to_json(recommend_dict, reports_values, word_count):
     advice_json['company_shokushu'] = company_shokushu_name
     return advice_json
 
-def recommend_rate(reports_values):
+def recommend_rate(reports_values, reports):
     compRecommendDic = {}
     for report_no in reports_values:
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         simSum = calcSimSum(reports_values[report_no]["similarities"])
         simLog = calcSimLog(simSum)
-        recommend_rate = simSum * (typeRate * shokushuRate)
+        if recommend_formula == 1:
+            recommend_rate = simSum * (typeRate * shokushuRate) + reports[report_no]["is_high_predicted"]
+        elif recommend_formula == 2:
+            recommend_rate = simSum * (typeRate * shokushuRate) + reports[report_no]["feature_importance_rate_std"]
+        else:
+            recommend_rate = simSum * (typeRate * shokushuRate)
         compRecommendDic[report_no] = recommend_rate
     return compRecommendDic
 
@@ -131,8 +135,8 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     wordCount = {} # 類似単語の出現回数
 
-    adDicts = load_reports()
-    reports_values = initialize_report_dict(adDicts)
+    reports = load_pickle(load_pickle_name=PATH["REPORTS_PICKELE"])
+    reports_values = initialize_report_dict(reports)
 
     calc = Calc()
 
@@ -141,11 +145,10 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
         cosineSimilarity = word_and_similarity[1]
         wordCount[similarWord] = 0
         if not is_noun(similarWord): continue
-        for index in adDicts:
-            report = adDicts[index]
+        for report_no in reports:
+            report = reports[report_no]
             if is_few_words(report['advice_divide_mecab']): continue
             if not report['advice']: continue
-            report_no = report["reportNo"]
             if is_not_match_report(report["companyType"], report["companyShokushu"]): continue
             if similarWord in report['tfidf']:
                 similarity = report['tfidf'][similarWord] * cosineSimilarity
@@ -163,7 +166,7 @@ def neighbor_word(posi, nega=[], n=NEIGHBOR_WORDS, inputText = None):
 
     wordCount = clean_sort_dictionary(wordCount)
 
-    recommendRateDict = recommend_rate(reports_values)
+    recommendRateDict = recommend_rate(reports_values, reports)
     advice_json = advice_to_json(recommendRateDict, reports_values, wordCount)
 
     return json_dump(advice_json)
@@ -172,12 +175,15 @@ def calc(equation):
     words = parser_mecab(equation)
     return neighbor_word(words, inputText=equation)
 
+def is_karamozi(word):
+    return not word
 
 model = word2vec.Word2Vec.load(sys.argv[1])
 equation = change_word(sys.argv[2])
 company_type_name = sys.argv[3].split()
 company_shokushu_name = sys.argv[4].split()
 det_check = sys.argv[5]
+recommend_formula = 0 if is_karamozi(sys.argv[6]) else int(sys.argv[6])
 
 if __name__=="__main__":
     similarReports = calc(equation)

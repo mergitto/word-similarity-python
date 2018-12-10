@@ -165,7 +165,8 @@ class AddValues():
 
         for index in self.reports:
             current_report = self.reports[index]
-            current_report["count_selection"] = self.date_pluck(current_report["report_created_date"])
+            current_report["report_created_datetime"] = self.date_pluck(current_report["report_created_date"])
+            current_report["count_selection"] = self.count_selection(current_report)
             current_report["today_created_diff_days"] = self.diff_days_from_now(current_report["report_created_date"])
             current_report["first_final_diff_days"] = self.oral_first_final_diff_days(current_report)
             current_report["identification_word_count"] = self.count_identification(current_report["advice_divide_mecab"])

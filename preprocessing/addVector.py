@@ -9,11 +9,9 @@ from natto import MeCab
 import pickle
 import re
 import numpy as np
-from tqdm import tqdm
 import os, sys
 from const import WORD2VECMODELFILE
 from parse import parser_mecab
-print("Add Vector")
 
 model = Word2Vec.load(WORD2VECMODELFILE)
 
@@ -53,11 +51,12 @@ def document_norm(document):
     return document
 
 
+print("Add Vector")
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 with open(CURRENTPATH+'/../pickle/advice.pickle', 'rb') as f:
     reports = pickle.load(f)
 
-for index in tqdm(reports):
+for index in reports:
     report = reports[index]
     document = document_norm(report['advice'])
     vector_values = add_vector(document)
@@ -68,4 +67,4 @@ for index in tqdm(reports):
 
 with open(CURRENTPATH+'/../pickle/advice_add_vector.pickle', 'wb') as f:
     pickle.dump(reports, f)
-
+print("Add Vector Finished!")
