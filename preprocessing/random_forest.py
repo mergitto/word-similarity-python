@@ -62,9 +62,9 @@ class Tree():
                     # 各報告書ごとに特徴の重要度を掛け合わせて足し算する（この時、各値は↑でscaleさせた値を使用）
                     sum([values[importance] * importances[importance] for importance in importances])
                 )
-        im_std = [calc.normalization(f_i, feature_importances_rate_list) for f_i in feature_importances_rate_list]
+        im_norm = [calc.normalization(f_i, feature_importances_rate_list) for f_i in feature_importances_rate_list]
         df["feature_importance_rate"] = feature_importances_rate_list
-        df["feature_importance_rate_std"] = im_std
+        df["feature_importance_rate_norm"] = im_norm
         return df.T.to_dict()
 
     def save_model(self, save_model_name):
