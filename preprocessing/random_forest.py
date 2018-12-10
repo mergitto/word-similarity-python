@@ -62,9 +62,9 @@ class Tree():
                     # 各報告書ごとに特徴の重要度を掛け合わせて足し算する（この時、各値は↑でscaleさせた値を使用）
                     sum([values[importance] * importances[importance] for importance in importances])
                 )
-        im_std = [calc.normalization(f_i, feature_importances_rate_list) for f_i in feature_importances_rate_list]
+        im_norm = [calc.normalization(f_i, feature_importances_rate_list) for f_i in feature_importances_rate_list]
         df["feature_importance_rate"] = feature_importances_rate_list
-        df["feature_importance_rate_std"] = im_std
+        df["feature_importance_rate_norm"] = im_norm
         return df.T.to_dict()
 
     def save_model(self, save_model_name):
@@ -148,14 +148,14 @@ class Tree():
         from sklearn.model_selection import GridSearchCV
         print("======= グリッドサーチ ======")
         params = {'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
-                'n_estimators': [10]}
+                'n_estimators': [10, 100]}
         clf = GridSearchCV(RandomForestClassifier(), params, cv = 10)
         clf.fit(X = self.X, y = self.y)
         print("best_score: ",clf.best_score_)
         print(clf.best_params_)
         print("============ end =============")
 
-    def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=10):
+    def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=2000):
         clf = RandomForestClassifier(
                 bootstrap=True, class_weight=None, criterion='gini',
                 max_depth=max_depth, max_features='auto', max_leaf_nodes=None,
