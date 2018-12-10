@@ -148,14 +148,14 @@ class Tree():
         from sklearn.model_selection import GridSearchCV
         print("======= グリッドサーチ ======")
         params = {'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
-                'n_estimators': [10]}
+                'n_estimators': [10, 100]}
         clf = GridSearchCV(RandomForestClassifier(), params, cv = 10)
         clf.fit(X = self.X, y = self.y)
         print("best_score: ",clf.best_score_)
         print(clf.best_params_)
         print("============ end =============")
 
-    def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=10):
+    def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=2000):
         clf = RandomForestClassifier(
                 bootstrap=True, class_weight=None, criterion='gini',
                 max_depth=max_depth, max_features='auto', max_leaf_nodes=None,
