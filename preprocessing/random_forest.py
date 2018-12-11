@@ -91,7 +91,7 @@ class Tree():
         print("======= random_forest_classifier:max_depth={} ======".format(max_depth))
         X_train, X_test, y_train, y_test = self.train_test_data_split(random_state=random_state, test_size=0.3)
         X_train_std, X_test_std = self.std_X(X_train, X_test)
-        clf = self.get_model(clf_name="random_forest", max_depth=max_depth)
+        clf = self.get_model(clf_name="random_forest", max_depth=max_depth, n_estimators=2000)
         clf.fit(X_train_std, y_train)
         self.clf = clf
         print(self.X.keys())
@@ -135,7 +135,7 @@ class Tree():
     def cross_validation(self, max_depth=2):
         from sklearn.model_selection import cross_val_score
         print("======= 交差検証 ======")
-        clf = self.get_model(max_depth = max_depth)
+        clf = self.get_model(max_depth = max_depth, n_estimators=10)
         score = cross_val_score(estimator = clf, X = self.X, y = self.y, cv = 5)
 
         X_train,X_test,y_train,y_test = self.train_test_data_split(random_state=max_depth, test_size=0.3)
@@ -149,14 +149,14 @@ class Tree():
         from sklearn.model_selection import GridSearchCV
         print("======= グリッドサーチ ======")
         params = {'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
-                'n_estimators': [10, 100]}
+                'n_estimators': [10]}
         clf = GridSearchCV(RandomForestClassifier(), params, cv = 10)
         clf.fit(X = self.X, y = self.y)
         print("best_score: ",clf.best_score_)
         print(clf.best_params_)
         print("============ end =============")
 
-    def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=2000):
+    def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=100):
         clf = RandomForestClassifier(
                 bootstrap=True, class_weight=None, criterion='gini',
                 max_depth=max_depth, max_features='auto', max_leaf_nodes=None,
