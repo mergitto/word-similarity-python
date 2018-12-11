@@ -47,7 +47,7 @@ class Tree():
         X_std,X_dummy_std = self.std_X(X_list, X_list)
         predicted = clf.predict(X_std)
         df["is_high_predicted"] = [int(i) for i in predicted]
-        df["predicted_high_rate"] = [high_rate[1] for high_rate in clf.predict_proba(X_std)]
+        df["predicted_high_rate"] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in clf.predict_proba(X_std)]
         return df.T.to_dict()
 
     def add_importances_rate(self, importances=None, pickle_data=None):
