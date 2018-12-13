@@ -1,6 +1,7 @@
 import numpy as np
 
-def dt2code(tree, feature_names, class_names, func_name='f'):
+def dt2codes(random_forest_tree, feature_names, class_names, func_name='f'):
+    tree = random_forest_tree
     left = tree.tree_.children_left
     right = tree.tree_.children_right
     threshold = tree.tree_.threshold
