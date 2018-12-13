@@ -14,11 +14,11 @@ def dt2code(random_forest_tree, feature_names, class_names, func_name='f'):
         if (threshold[node] != -2):
             output += "%sif %s <= %s:  # samples=%s\n" % (' ' * indent, features[node], str(threshold[node]), n_node_samples[node])
             if left[node] != -1:
-                output += "%srules['%s'] = {'lteq', %s}\n" % (' ' * (indent+4), features[node], str(threshold[node]))
+                output += "%srules['%s'] = {'lteq': %s}\n" % (' ' * (indent+4), features[node], str(threshold[node]))
                 output += gen_code(left, right, threshold, features, n_node_samples, left[node], indent+4)
             output += "%selse:\n" % (' ' * indent)
             if right[node] != -1:
-                output += "%srules['%s'] = {'gteq', %s}\n" % (' ' * (indent+4), features[node], str(threshold[node]))
+                output += "%srules['%s'] = {'gteq': %s}\n" % (' ' * (indent+4), features[node], str(threshold[node]))
                 output += gen_code(left, right, threshold, features, n_node_samples, right[node], indent+4)
         else:
             class_idx = np.argmax(value[node])
@@ -47,13 +47,13 @@ def dt2codes(random_forest_trees, feature_names, class_names, func_name='f'):
     codes += "def predict(X):\n"
     codes += "    def majority_decision(*args):\n"
     codes += "        FUNCS = (%s)\n" % (func_names)
-    codes += "        cntr = Counter()\n"
+    codes += "        predict_list = []\n"
     codes += "        rules = []\n"
     codes += "        for f in FUNCS:\n"
     codes += "            predicted, rule = f(*args)\n"
-    codes += "            cntr[predicted] += 1\n"
+    codes += "            predict_list.append(predicted)\n"
     codes += "            rules.append(rule)\n"
-    codes += "        return cntr.most_common()[0][0], rules\n"
+    codes += "        return predict_list, rules\n"
     codes += "    md_predict = []\n"
     codes += "    route_rules = []\n"
     codes += "    for md in map(lambda x: majority_decision(*x), X):\n"
