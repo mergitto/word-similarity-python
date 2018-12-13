@@ -1,6 +1,6 @@
 import numpy as np
 
-def dt2codes(random_forest_tree, feature_names, class_names, func_name='f'):
+def dt2code(random_forest_tree, feature_names, class_names, func_name='f'):
     tree = random_forest_tree
     left = tree.tree_.children_left
     right = tree.tree_.children_right
@@ -30,4 +30,12 @@ def dt2codes(random_forest_tree, feature_names, class_names, func_name='f'):
     code += '    """\n'
     code += gen_code(left, right, threshold, features, n_node_samples, 0, 4)
     return code
+
+def dt2codes(random_forest_trees, feature_names, class_names, func_name='f'):
+    codes = ""
+    for index, r_est in enumerate(random_forest_trees.estimators_):
+        current_func_name = "%s%s" % (func_name, index)
+        codes += dt2code(r_est, feature_names, class_names, func_name=current_func_name)
+    return codes
+
 
