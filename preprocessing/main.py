@@ -17,7 +17,7 @@ drop_list = [
         "recommend_level", "tfidf_top_average",
         "info_date", "write_date", "first_date", "second_date", "final_date", "decision_date",
         "advice_divide_mecab", "bm25_average", "course_code", "created",
-        "keywords", "modified", "score", "score_min_max", "search_word",
+        "keywords", "modified", "score", "search_word",
         "search_word_wakati", "st_no",
         "most_highest_similarity", "is_good", "recommend_formula", "evaluation_id", "report_no",
         "similarity_sum", "report_created_datetime", "is_match_keywords", "recommend_rank",

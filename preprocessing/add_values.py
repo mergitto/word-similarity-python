@@ -110,9 +110,6 @@ class AddValues():
             score_values = list(set(list(st_no_df.score)))
             for i in st_no_df.iterrows():
                 series = i[1]
-                score_min_max = ( series.score - score_df.min() ) / ( score_df.max() - score_df.min() )
-                score_min_max = round(score_min_max, 2)
-                series["score_min_max"] = score_min_max
                 score_std = ( series.score - score_df.mean() ) / score_df.std()
                 score_std = round(score_std, 2)
                 series["score_std"] = score_std
@@ -130,7 +127,6 @@ class AddValues():
             match_df = df[df["evaluation_id"] == c_report["evaluation_id"]]
             match_df =  match_df.iloc[-1]
             c_report["score_std"] = match_df.score_std
-            c_report["score_min_max"] = match_df.score_min_max
 
     def perfect_check(self, target, keywords):
         is_in = False
