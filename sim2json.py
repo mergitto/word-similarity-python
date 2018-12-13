@@ -112,9 +112,9 @@ def recommend_rate(reports_values, reports):
         typeRate = list_checked(reports_values[report_no]["type"], company_type_name)
         shokushuRate = list_checked(reports_values[report_no]["shokushu"], company_shokushu_name)
         if recommend_formula == 1:
-            recommend_rate = (simSumNorm[report_no] + reports[report_no]["is_high_predicted"]) * (typeRate * shokushuRate)
+            recommend_rate = (simSumNorm[report_no] + reports[report_no]["predicted_high_rate"]) * (typeRate * shokushuRate)
         elif recommend_formula == 2:
-            recommend_rate = (simSumNorm[report_no] + reports[report_no]["feature_importance_rate_norm"]) * (typeRate * shokushuRate)
+            recommend_rate = (simSumNorm[report_no] + reports[report_no]["auto_importance_rate_norm"]) * (typeRate * shokushuRate)
         else:
             recommend_rate = simSumNorm[report_no] * (typeRate * shokushuRate)
         compRecommendDic[report_no] = recommend_rate

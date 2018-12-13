@@ -17,7 +17,7 @@ drop_list = [
         "recommend_level", "tfidf_top_average",
         "info_date", "write_date", "first_date", "second_date", "final_date", "decision_date",
         "advice_divide_mecab", "bm25_average", "course_code", "created",
-        "keywords", "modified", "score", "score_min_max", "search_word",
+        "keywords", "modified", "score", "search_word",
         "search_word_wakati", "st_no",
         "most_highest_similarity", "is_good", "recommend_formula", "evaluation_id", "report_no",
         "similarity_sum", "report_created_datetime", "is_match_keywords", "recommend_rank",
@@ -31,7 +31,7 @@ evaluations_data = load_pickle(load_file_name=CURRENTPATH+"/../pickle/evaluation
 print("Create RandomForestModel")
 tree = Tree(evaluations_data)
 tree.add_dummy_score(high_report_rate=0.4)
-tree.drop_na(drop_na_list=["score", "recommend_rank"])
+tree.drop_na(drop_na_list=["score", "score_std", "recommend_rank"])
 tree.drop_columns(drop_list)
 tree.set_X_and_y(objective_key="score_dummy")
 
@@ -42,9 +42,9 @@ print("Create RandomForestModel finished!")
 
 print("Add Predicted Start")
 clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/random_forest.model")
-all_reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_values_for_machine_learning.pickle")
-all_reports_with_predicted = tree.add_predicted(clf=clf, pickle_data=all_reports)
-dump_pickle(all_reports_with_predicted, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
+reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_values_for_machine_learning.pickle")
+reports = tree.add_predicted(clf=clf, pickle_data=reports)
+dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
 print("Add Predicted Finished!")
 
 print("Get Importances")
@@ -54,8 +54,8 @@ print("Get Importances Finished!")
 
 print("Add Importance Rate")
 importances = load_pickle(load_file_name=CURRENTPATH+"/../pickle/importance_dict.pickle")
-all_reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
-all_reports_with_importances_rate = tree.add_importances_rate(importances=importances, pickle_data=all_reports)
-dump_pickle(all_reports_with_importances_rate, dump_file_name=CURRENTPATH+"/../pickle/advice_add_importances_rate.pickle")
+reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
+reports = tree.add_importances_rate(importances=importances, pickle_data=reports)
+dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_importances_rate.pickle")
 print("Add Importance Rate Finished!")
 
