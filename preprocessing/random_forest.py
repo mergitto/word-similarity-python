@@ -69,13 +69,12 @@ class Tree():
 
         from collections import defaultdict
         from preprocessing.rf2code import predict
-        pred_1, route_rules = predict(numpy_std)
+        pred, route_rules = predict(numpy_std)
         weight = 1 / len(route_rules[0]) # random_forestのn_estimatorsの数で重みを決定する(n_estimators=100なら、1/100=0.01)
         feature_importances_rate_list = []
         for i, values in enumerate(df_std.iterrows()):
-            # pred_1[i] は numpy_std[i]の予測結果となる
             # numpy_std[i] == list(values[1])
-            # なので、↑を組み合わせれば大元の項目に修正を加えることが出来そう
+            # pred[i] は numpy_std[i]の予測結果となる
             index = values[0]
             value = values[1]
             count_feature = defaultdict(int)
@@ -84,12 +83,12 @@ class Tree():
                 for feature_name in rr:
                     if "lteq" in rr[feature_name]:
                         if value[feature_name] <= rr[feature_name]["lteq"]:
-                            count_feature[feature_name] += weight if pred_1[i][predict_num] == 1 else -weight
-                        #print(rr[feature_name], "この値以下の時の予測値: ", pred_1[i][predict_num], "データの値: ", value[feature_name])
+                            count_feature[feature_name] += weight if pred[i][predict_num] == 1 else -weight
+                        #print(rr[feature_name], "この値以下の時の予測値: ", pred[i][predict_num], "データの値: ", value[feature_name])
                     if "gteq" in rr[feature_name]:
                         if value[feature_name] >= rr[feature_name]["gteq"]:
-                            count_feature[feature_name] += weight if pred_1[i][predict_num] == 1 else -weight
-                        #print(rr[feature_name], "この値以上の時の予測値: ", pred_1[i][predict_num], "データの値: ", value[feature_name])
+                            count_feature[feature_name] += weight if pred[i][predict_num] == 1 else -weight
+                        #print(rr[feature_name], "この値以上の時の予測値: ", pred[i][predict_num], "データの値: ", value[feature_name])
             feature_importances_rate_list.append(
                     # 各報告書ごとに特徴の重要度を掛け合わせて足し算する（この時、各値は↑でscaleさせた値を使用）
                     sum([count_feature[importance] * importances[importance] for importance in importances])
