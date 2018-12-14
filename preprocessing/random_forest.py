@@ -81,14 +81,14 @@ class Tree():
             report_no, values = current_df
             count_feature = defaultdict(int)
             current_route_rules = route_rules[i]
-            for predict_num, rr in enumerate(current_route_rules):
-                for feature_name in rr:
+            for predict_num, route_rule in enumerate(current_route_rules):
+                for feature_name in route_rule:
                     # 予測値とあっている場合にはプラスweightして、そうでないときはマイナスweight
-                    if self.exist_key(rr[feature_name], key_name="lteq"):
-                        if values[feature_name] <= rr[feature_name]["lteq"]:
+                    if self.exist_key(route_rule[feature_name], key_name="lteq"):
+                        if values[feature_name] <= route_rule[feature_name]["lteq"]:
                             count_feature[feature_name] += weight if pred[i][predict_num] == 1 else -weight
-                    if self.exist_key(rr[feature_name], key_name="gteq"):
-                        if values[feature_name] >= rr[feature_name]["gteq"]:
+                    if self.exist_key(route_rule[feature_name], key_name="gteq"):
+                        if values[feature_name] >= route_rule[feature_name]["gteq"]:
                             count_feature[feature_name] += weight if pred[i][predict_num] == 1 else -weight
             feature_importances_rate_list.append(
                     sum([count_feature[importance] * importances[importance] for importance in importances])
