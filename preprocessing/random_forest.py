@@ -50,6 +50,9 @@ class Tree():
         df["predicted_high_rate"] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in clf.predict_proba(X_std)]
         return df.T.to_dict()
 
+    def exist_key(self, dictionary, key_name=""):
+        return True if key_name in dictionary else False
+
     def add_importances_rate(self, importances=None, pickle_data=None):
         calc = Calc()
         df = pd.DataFrame.from_dict(pickle_data).T
@@ -57,8 +60,8 @@ class Tree():
         numpy_std,_  = self.std_X(df_importances, df_importances, with_mean=False)
         df_std = pd.DataFrame(numpy_std, index=df_importances.index, columns=df_importances.columns)
         feature_importances_rate_list = []
-        for i in df_std.iterrows():
-            report_no, values = i
+        for current_df in df_std.iterrows():
+            report_no, values = current_df
             feature_importances_rate_list.append(
                     # 各報告書ごとに特徴の重要度を掛け合わせて足し算する（この時、各値は↑でscaleさせた値を使用）
                     sum([values[importance] * importances[importance] for importance in importances])
@@ -69,29 +72,25 @@ class Tree():
 
         from collections import defaultdict
         from preprocessing.rf2code import predict
-        pred_1, route_rules = predict(numpy_std)
+        pred, route_rules = predict(numpy_std)
         weight = 1 / len(route_rules[0]) # random_forestのn_estimatorsの数で重みを決定する(n_estimators=100なら、1/100=0.01)
         feature_importances_rate_list = []
-        for i, values in enumerate(df_std.iterrows()):
-            # pred_1[i] は numpy_std[i]の予測結果となる
-            # numpy_std[i] == list(values[1])
-            # なので、↑を組み合わせれば大元の項目に修正を加えることが出来そう
-            index = values[0]
-            value = values[1]
+        for i, current_df in enumerate(df_std.iterrows()):
+            # numpy_std[i] == list(current_df[1])
+            # pred[i] は numpy_std[i]の予測結果となる
+            report_no, values = current_df
             count_feature = defaultdict(int)
             current_route_rules = route_rules[i]
-            for predict_num, rr in enumerate(current_route_rules):
-                for feature_name in rr:
-                    if "lteq" in rr[feature_name]:
-                        if value[feature_name] <= rr[feature_name]["lteq"]:
-                            count_feature[feature_name] += weight if pred_1[i][predict_num] == 1 else -weight
-                        #print(rr[feature_name], "この値以下の時の予測値: ", pred_1[i][predict_num], "データの値: ", value[feature_name])
-                    if "gteq" in rr[feature_name]:
-                        if value[feature_name] >= rr[feature_name]["gteq"]:
-                            count_feature[feature_name] += weight if pred_1[i][predict_num] == 1 else -weight
-                        #print(rr[feature_name], "この値以上の時の予測値: ", pred_1[i][predict_num], "データの値: ", value[feature_name])
+            for predict_num, route_rule in enumerate(current_route_rules):
+                for feature_name in route_rule:
+                    # 予測値とあっている場合にはプラスweightして、そうでないときはマイナスweight
+                    if self.exist_key(route_rule[feature_name], key_name="lteq"):
+                        if values[feature_name] <= route_rule[feature_name]["lteq"]:
+                            count_feature[feature_name] += weight if pred[i][predict_num] == 1 else -weight
+                    if self.exist_key(route_rule[feature_name], key_name="gteq"):
+                        if values[feature_name] >= route_rule[feature_name]["gteq"]:
+                            count_feature[feature_name] += weight if pred[i][predict_num] == 1 else -weight
             feature_importances_rate_list.append(
-                    # 各報告書ごとに特徴の重要度を掛け合わせて足し算する（この時、各値は↑でscaleさせた値を使用）
                     sum([count_feature[importance] * importances[importance] for importance in importances])
                 )
         im_norm = [calc.normalization(f_i, feature_importances_rate_list) for f_i in feature_importances_rate_list]
