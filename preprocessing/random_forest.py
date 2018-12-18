@@ -130,6 +130,7 @@ class Tree():
         clf.fit(X_train_std, y_train)
         self.clf = clf
         self.make_rf_code(clf)
+        print("説明変数の重要度: ",self.clf_importance(self.X, clf))
         print(self.X.keys())
         print('テストデータ：Confusion matrix:\n{}'.format(confusion_matrix(y_test, clf.predict(X_test_std))))
         self.f1_value(y_test, clf.predict(X_test_std))

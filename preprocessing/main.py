@@ -13,14 +13,13 @@ def dump_pickle(dump_data, dump_file_name=None):
 
 drop_list = [
         "report_created_date", "bm25_sum", "bm25", "advice",
-        "type_id", "shokushu_id", "score_std",
-        "recommend_level", "tfidf_top_average",
+        "type_id", "shokushu_id", "score_std", "recommend_level",
         "info_date", "write_date", "first_date", "second_date", "final_date", "decision_date",
         "advice_divide_mecab", "bm25_average", "course_code", "created",
-        "keywords", "modified", "score", "search_word",
-        "search_word_wakati", "st_no",
+        "keywords", "modified", "score", "search_word", "search_word_wakati", "st_no",
         "most_highest_similarity", "is_good", "recommend_formula", "evaluation_id", "report_no",
         "similarity_sum", "report_created_datetime", "is_match_keywords", "recommend_rank",
+        #"tfidf_top_average",
         #'count_selection', 'today_created_diff_days, 'first_final_diff_days',
         #'identification_word_count', 'tfidf_sum', 'word_length', 'word_count',
     ] # 不必要なカラム
@@ -36,7 +35,7 @@ tree.drop_columns(drop_list)
 tree.set_X_and_y(objective_key="score_dummy")
 
 max_depth = 4
-tree.random_forest(max_depth=4)
+tree.random_forest(max_depth=max_depth)
 tree.save_model(save_model_name=CURRENTPATH+"/../pickle/random_forest.model")
 print("Create RandomForestModel finished!")
 
