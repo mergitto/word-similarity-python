@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime
 import os
 from const import *
-from parse import parser_mecab
+from parse import parser_mecab, pluck_ne
 from preprocessing.tfidf import *
 from replace import change_word, decode_word
 
@@ -152,6 +152,7 @@ class AddValues():
             current_data["first_final_diff_days"] = self.oral_first_final_diff_days(current_data)
             current_data["word_length"] = len(current_data["advice"])
             current_data["word_count"] = len(current_data["advice_divide_mecab"])
+            current_data["ne_word_count"] = len(pluck_ne(current_data["advice"]))
             current_data["identification_word_count"] = self.count_identification(current_data["advice_divide_mecab"])
             current_data["search_word_wakati"] = parser_mecab(str(current_data["search_word"]))
             current_data["is_match_keywords"] = 1 if self.is_match_keywords(current_data["search_word_wakati"], current_data["keywords"]) else 0
@@ -168,6 +169,7 @@ class AddValues():
             current_report["identification_word_count"] = self.count_identification(current_report["advice_divide_mecab"])
             current_report["word_length"] = len(current_report["advice"])
             current_report["word_count"] = len(current_report["advice_divide_mecab"])
+            current_report["ne_word_count"] = len(pluck_ne(current_report["advice"]))
 
     def add_values(self):
         for i in self.evaluations:

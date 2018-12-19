@@ -17,6 +17,15 @@ def parser_mecab(text):
                 words.append(n.surface)
     return words
 
+def pluck_ne(text):
+    # 固有名詞の単語を配列で返す
+    words = []
+    for n in mc.parse(text, as_nodes=True):
+        node = n.feature.split(',');
+        if node[1] == '固有名詞':
+            words.append(n.surface)
+    return words
+
 def is_noun(word):
     for n in mc.parse(word, as_nodes=True):
         node = n.feature.split(',');
