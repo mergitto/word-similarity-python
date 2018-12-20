@@ -11,7 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from calc import Calc
 
-class Tree():
+class SupervisedLearning():
     def __init__(self, pickle_data):
         self.df = pd.DataFrame.from_dict(pickle_data).T
         self.pickle_data = pickle_data
@@ -222,4 +222,23 @@ class Tree():
         y_pred = predicted_score
         print("=============== f1-値 =============")
         print(classification_report(y_true, y_pred, target_names=self.class_names))
+
+    def neural(self, random_state=0):
+        print("======= MLPClassifier ======")
+        X_train, X_test, y_train, y_test = self.train_test_data_split(random_state=random_state, test_size=0.3)
+        X_train_std, X_test_std = self.std_X(X_train, X_test)
+        tuned_parameters = [{
+            'hidden_layer_sizes': [(100,),(200,),(100,100),(200,200)],
+            'learning_rate': ['invscaling', 'adaptive', 'constant'],
+            'activation': ['logistic', 'identity', 'relu', 'tanh']
+            },]
+        from sklearn.grid_search import GridSearchCV
+        from sklearn.neural_network import MLPClassifier
+        gsearch = GridSearchCV(MLPClassifier(max_iter=500), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch.fit(X_train_std, y_train)
+        print("ベストパラメータ:")
+        print(gsearch.best_estimator_)
+        print("各パラメータの平均スコア")
+        for params, mean_score, all_scores in sorted(gsearch.grid_scores_, key=lambda k: k[1],reverse=True) :
+            print("{:.3f} std:{:.3f} param: {}".format(mean_score, all_scores.std() , params))
 
