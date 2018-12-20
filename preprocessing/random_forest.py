@@ -232,9 +232,9 @@ class SupervisedLearning():
             'learning_rate': ['invscaling', 'adaptive', 'constant'],
             'activation': ['logistic', 'identity', 'relu', 'tanh']
             },]
-        from sklearn.grid_search import GridSearchCV
+        from sklearn.model_selection import GridSearchCV
         from sklearn.neural_network import MLPClassifier
-        gsearch = GridSearchCV(MLPClassifier(max_iter=500), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch = GridSearchCV(MLPClassifier(max_iter=300), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
         gsearch.fit(X_train_std, y_train)
         print("ベストパラメータ:")
         print(gsearch.best_estimator_)
