@@ -50,6 +50,15 @@ class SupervisedLearning():
         df["predicted_high_rate"] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in clf.predict_proba(X_std)]
         return df.T.to_dict()
 
+    def add_predicted_neural(self, mlp=None, pickle_data=None):
+        df = pd.DataFrame.from_dict(pickle_data).T
+        X_list = df[self.pluck_list]
+        X_std,X_dummy_std = self.std_X(X_list, X_list)
+        predicted = mlp.predict(X_std)
+        df["is_high_predicted_neural"] = [int(i) for i in predicted]
+        df["predicted_neural_high_rate"] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in mlp.predict_proba(X_std)]
+        return df.T.to_dict()
+
     def exist_key(self, dictionary, key_name=""):
         return True if key_name in dictionary else False
 
@@ -234,11 +243,20 @@ class SupervisedLearning():
             },]
         from sklearn.model_selection import GridSearchCV
         from sklearn.neural_network import MLPClassifier
-        gsearch = GridSearchCV(MLPClassifier(max_iter=300), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch = GridSearchCV(MLPClassifier(max_iter=200), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
         gsearch.fit(X_train_std, y_train)
         print("ベストパラメータ:")
         print(gsearch.best_estimator_)
         print("各パラメータの平均スコア")
         for params, mean_score, all_scores in sorted(gsearch.grid_scores_, key=lambda k: k[1],reverse=True) :
             print("{:.3f} std:{:.3f} param: {}".format(mean_score, all_scores.std() , params))
+        mlp = MLPClassifier(activation='tanh', alpha=0.0001, batch_size='auto', beta_1=0.9,
+                beta_2=0.999, early_stopping=False, epsilon=1e-08,
+                hidden_layer_sizes=(100,), learning_rate='adaptive',
+                learning_rate_init=0.001, max_iter=200, momentum=0.9,
+                nesterovs_momentum=True, power_t=0.5, random_state=None,
+                shuffle=True, solver='adam', tol=0.0001, validation_fraction=0.1,
+                verbose=False, warm_start=False)
+        mlp.fit(X_train_std, y_train)
+        self.clf = mlp
 
