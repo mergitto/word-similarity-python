@@ -42,7 +42,8 @@ print("Create RandomForestModel finished!")
 print("Add Predicted(random_forest) Start")
 clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/random_forest.model")
 reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_values_for_machine_learning.pickle")
-reports = tree.add_predicted(clf=clf, pickle_data=reports)
+reports = tree.add_predicted(clf=clf, pickle_data=reports,
+        is_high_predicted_name="is_high_predicted", predicted_high_rate_name="predicted_high_rate")
 dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
 print("Add Predicted Finished!")
 
@@ -56,7 +57,8 @@ tree.neural()
 tree.save_model(save_model_name=CURRENTPATH+"/../pickle/neural_mlp.model")
 clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/neural_mlp.model")
 reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
-reports = tree.add_predicted_neural(mlp=clf, pickle_data=reports)
+reports = tree.add_predicted(clf=clf, pickle_data=reports,
+        is_high_predicted_name="is_high_predicted_neural", predicted_high_rate_name="predicted_neural_high_rate")
 dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_neural.pickle")
 print("Add Predicted Finished!")
 

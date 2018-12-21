@@ -41,22 +41,13 @@ class SupervisedLearning():
         X_test_std = sc.transform(X_test)
         return X_train_std, X_test_std
 
-    def add_predicted(self, clf=None, pickle_data=None):
+    def add_predicted(self, clf=None, pickle_data=None, is_high_predicted_name="", predicted_high_rate_name=""):
         df = pd.DataFrame.from_dict(pickle_data).T
         X_list = df[self.pluck_list]
         X_std,X_dummy_std = self.std_X(X_list, X_list)
         predicted = clf.predict(X_std)
-        df["is_high_predicted"] = [int(i) for i in predicted]
-        df["predicted_high_rate"] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in clf.predict_proba(X_std)]
-        return df.T.to_dict()
-
-    def add_predicted_neural(self, mlp=None, pickle_data=None):
-        df = pd.DataFrame.from_dict(pickle_data).T
-        X_list = df[self.pluck_list]
-        X_std,X_dummy_std = self.std_X(X_list, X_list)
-        predicted = mlp.predict(X_std)
-        df["is_high_predicted_neural"] = [int(i) for i in predicted]
-        df["predicted_neural_high_rate"] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in mlp.predict_proba(X_std)]
+        df[is_high_predicted_name] = [int(i) for i in predicted]
+        df[predicted_high_rate_name] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in clf.predict_proba(X_std)]
         return df.T.to_dict()
 
     def exist_key(self, dictionary, key_name=""):
