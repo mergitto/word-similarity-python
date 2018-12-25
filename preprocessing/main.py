@@ -52,11 +52,21 @@ importance_dict = tree.clf_importance(tree.X, tree.clf)
 dump_pickle(importance_dict, dump_file_name=CURRENTPATH+"/../pickle/importance_dict.pickle")
 print("Get Importances Finished!")
 
+print("Add Predicted(random_forest) Start")
+tree.random_forest()
+tree.save_model(save_model_name=CURRENTPATH+"/../pickle/randomf_clf.model")
+clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/randomf_clf.model")
+reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
+reports = tree.add_predicted(clf=clf, pickle_data=reports,
+        is_high_predicted_name="is_high_predicted_randomf", predicted_high_rate_name="predicted_randomf_high_rate")
+dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_randomf.pickle")
+print("Add Predicted Finished!")
+
 print("Add Predicted(neural) Start")
 tree.neural()
 tree.save_model(save_model_name=CURRENTPATH+"/../pickle/neural_mlp.model")
 clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/neural_mlp.model")
-reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted.pickle")
+reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_randomf.pickle")
 reports = tree.add_predicted(clf=clf, pickle_data=reports,
         is_high_predicted_name="is_high_predicted_neural", predicted_high_rate_name="predicted_neural_high_rate")
 dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_neural.pickle")
