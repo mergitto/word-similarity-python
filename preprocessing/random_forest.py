@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
 from calc import Calc
 
 class SupervisedLearning():
@@ -122,29 +123,6 @@ class SupervisedLearning():
         with open("preprocessing/rf2code.py", 'w') as f:
             f.write(dt2codes(clf, self.X.keys(), self.class_names))
 
-    def random_forest(self, random_state=0, max_depth=2):
-        print("======= random_forest_classifier:max_depth={} ======".format(max_depth))
-        X_train, X_test, y_train, y_test = self.train_test_data_split(random_state=random_state, test_size=0.3)
-        X_train_std, X_test_std = self.std_X(X_train, X_test)
-        clf = self.get_model(clf_name="random_forest", max_depth=max_depth, n_estimators=500)
-        clf.fit(X_train_std, y_train)
-        self.clf = clf
-        self.make_rf_code(clf)
-        print("説明変数の重要度: ",self.clf_importance(self.X, clf))
-        print(self.X.keys())
-        print('テストデータ：Confusion matrix:\n{}'.format(confusion_matrix(y_test, clf.predict(X_test_std))))
-        self.f1_value(y_test, clf.predict(X_test_std))
-        print("Accuracy:")
-        score = {
-                'train': metrics.accuracy_score(y_train, clf.predict(X_train_std)) ,
-                'test': metrics.accuracy_score(y_test, clf.predict(X_test_std))
-            }
-        print(score)
-        self.cross_validation(max_depth=max_depth)
-        self.grid_search()
-        self.precision_recall_curve(clf, y_test, X_test_std)
-        self.auc_curve(clf, y_test, X_test_std)
-
     def precision_recall_curve(self, clf, y_test, X_test):
         from sklearn.metrics import precision_recall_curve
         precision, recall, thresholds = precision_recall_curve(y_test, clf.predict_proba(X_test)[:, 1])
@@ -180,17 +158,6 @@ class SupervisedLearning():
         clf.fit(X_train_std, y_train)
         print("[max_depth, score_mean, train_predict, test_predict]")
         print("", [max_depth, score.mean(), metrics.accuracy_score(y_train, clf.predict(X_train_std)), metrics.accuracy_score(y_test, clf.predict(X_test_std))])
-        print("============ end =============")
-
-    def grid_search(self):
-        from sklearn.model_selection import GridSearchCV
-        print("======= グリッドサーチ ======")
-        params = {'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
-                'n_estimators': [10]}
-        clf = GridSearchCV(RandomForestClassifier(), params, cv = 10)
-        clf.fit(X = self.X, y = self.y)
-        print("best_score: ",clf.best_score_)
-        print(clf.best_params_)
         print("============ end =============")
 
     def get_model(self, clf_name="random_forest", max_depth=2, n_estimators=100):
@@ -232,9 +199,8 @@ class SupervisedLearning():
             'learning_rate': ['invscaling', 'adaptive', 'constant'],
             'activation': ['logistic', 'identity', 'relu', 'tanh']
             },]
-        from sklearn.model_selection import GridSearchCV
         from sklearn.neural_network import MLPClassifier
-        gsearch = GridSearchCV(MLPClassifier(max_iter=200), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch = GridSearchCV(MLPClassifier(max_iter=1000), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
         gsearch.fit(X_train_std, y_train)
         print("ベストパラメータ:")
         print(gsearch.best_estimator_)
@@ -244,4 +210,56 @@ class SupervisedLearning():
         mlp = gsearch.best_estimator_
         mlp.fit(X_train_std, y_train)
         self.clf = mlp
+        print("======= END ======")
+
+    def svm(self):
+        print("======= SVM ======")
+        X_train, X_test, y_train, y_test = self.train_test_data_split(test_size=0.3)
+        X_train_std, X_test_std = self.std_X(X_train, X_test)
+        params = {
+            'C': [0.001, 0.01, 0.1, 1, 10, 100],
+            'gamma': [0.001, 0.01, 0.1, 1, 10, 100]
+        }
+        from sklearn.svm import SVC
+        gsearch = GridSearchCV(SVC(max_iter=-1, probability=True), params, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch.fit(X_train_std, y_train)
+        print("ベストパラメータ:")
+        print(gsearch.best_estimator_)
+        print("各パラメータの平均スコア")
+        for params, mean_score, all_scores in sorted(gsearch.grid_scores_, key=lambda k: k[1],reverse=True) :
+            print("{:.3f} std:{:.3f} param: {}".format(mean_score, all_scores.std() , params))
+        clf = gsearch.best_estimator_
+        clf.fit(X_train_std, y_train)
+        self.clf = clf
+        print("======= END ======")
+
+    def random_forest(self, random_state=0, max_depth=2):
+        print("======= RandomForestClassifier ======")
+        X_train, X_test, y_train, y_test = self.train_test_data_split(test_size=0.3)
+        X_train_std, X_test_std = self.std_X(X_train, X_test)
+        params = {
+            'max_depth': [2, 3, 4, 5, 6, 7, 8, 9],
+            'n_estimators': [10, 100, 1000]
+        }
+        gsearch = GridSearchCV(RandomForestClassifier(), params, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch.fit(X_train_std, y_train)
+        print("ベストパラメータ:")
+        print(gsearch.best_estimator_)
+        print("各パラメータの平均スコア")
+        for params, mean_score, all_scores in sorted(gsearch.grid_scores_, key=lambda k: k[1],reverse=True) :
+            print("{:.3f} std:{:.3f} param: {}".format(mean_score, all_scores.std() , params))
+        clf = gsearch.best_estimator_
+        print("説明変数の重要度: ",self.clf_importance(self.X, clf))
+        self.clf = clf
+        print('テストデータ：Confusion matrix:\n{}'.format(confusion_matrix(y_test, clf.predict(X_test_std))))
+        self.f1_value(y_test, clf.predict(X_test_std))
+        score = {
+                'train': metrics.accuracy_score(y_train, clf.predict(X_train_std)) ,
+                'test': metrics.accuracy_score(y_test, clf.predict(X_test_std))
+            }
+        print(score)
+        self.cross_validation(max_depth=4)
+        self.precision_recall_curve(clf, y_test, X_test_std)
+        self.auc_curve(clf, y_test, X_test_std)
+        print("============ end =============")
 

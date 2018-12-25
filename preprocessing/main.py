@@ -62,9 +62,19 @@ reports = tree.add_predicted(clf=clf, pickle_data=reports,
 dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_neural.pickle")
 print("Add Predicted Finished!")
 
+print("Add Predicted(svm) Start")
+tree.svm()
+tree.save_model(save_model_name=CURRENTPATH+"/../pickle/svm_clf.model")
+clf = tree.load_model(load_model_name=CURRENTPATH+"/../pickle/svm_clf.model")
+reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_neural.pickle")
+reports = tree.add_predicted(clf=clf, pickle_data=reports,
+        is_high_predicted_name="is_high_predicted_svm", predicted_high_rate_name="predicted_svm_high_rate")
+dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_svm.pickle")
+print("Add Predicted Finished!")
+
 print("Add Importance Rate")
 importances = load_pickle(load_file_name=CURRENTPATH+"/../pickle/importance_dict.pickle")
-reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_neural.pickle")
+reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_svm.pickle")
 reports = tree.add_importances_rate(importances=importances, pickle_data=reports)
 dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_importances_rate.pickle")
 print("Add Importance Rate Finished!")
