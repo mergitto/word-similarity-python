@@ -107,7 +107,6 @@ class AddValues():
             st_no_df = dataframe[dataframe["st_no"] == st_no_key]
 
             score_df = st_no_df.score
-            score_values = list(set(list(st_no_df.score)))
             for i in st_no_df.iterrows():
                 series = i[1]
                 score_std = ( series.score - score_df.mean() ) / score_df.std()
