@@ -210,6 +210,7 @@ class SupervisedLearning():
         mlp = gsearch.best_estimator_
         mlp.fit(X_train_std, y_train)
         self.clf = mlp
+        self.auc_curve(self.clf, y_test, X_test_std)
         print("======= END ======")
 
     def svm(self):
@@ -231,6 +232,7 @@ class SupervisedLearning():
         clf = gsearch.best_estimator_
         clf.fit(X_train_std, y_train)
         self.clf = clf
+        self.auc_curve(self.clf, y_test, X_test_std)
         print("======= END ======")
 
     def random_forest(self, random_state=0, max_depth=2):
@@ -260,6 +262,6 @@ class SupervisedLearning():
         print(score)
         self.cross_validation(max_depth=4)
         self.precision_recall_curve(clf, y_test, X_test_std)
-        self.auc_curve(clf, y_test, X_test_std)
+        self.auc_curve(self.clf, y_test, X_test_std)
         print("============ end =============")
 
