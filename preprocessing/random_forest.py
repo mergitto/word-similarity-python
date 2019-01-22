@@ -118,11 +118,6 @@ class SupervisedLearning():
             importance_dict[X.columns[index]] = importance
         return importance_dict
 
-    def make_rf_code(self, clf):
-        from preprocessing.dt2code import dt2codes
-        with open("preprocessing/rf2code.py", 'w') as f:
-            f.write(dt2codes(clf, self.X.keys(), self.class_names))
-
     def precision_recall_curve(self, clf, y_test, X_test):
         from sklearn.metrics import precision_recall_curve
         precision, recall, thresholds = precision_recall_curve(y_test, clf.predict_proba(X_test)[:, 1])
@@ -146,6 +141,7 @@ class SupervisedLearning():
         plt.xlabel('False Positive Rate')
         plt.ylim([0.0, 1.0])
         plt.xlim([0.0, 1.0])
+        #plt.savefig("Write save file name")
 
     def cross_validation(self, max_depth=2):
         from sklearn.model_selection import cross_val_score
@@ -210,6 +206,8 @@ class SupervisedLearning():
         mlp = gsearch.best_estimator_
         mlp.fit(X_train_std, y_train)
         self.clf = mlp
+        self.f1_value(y_test, self.clf.predict(X_test_std))
+        self.precision_recall_curve(self.clf, y_test, X_test_std)
         self.auc_curve(self.clf, y_test, X_test_std)
         print("======= END ======")
 
@@ -232,6 +230,8 @@ class SupervisedLearning():
         clf = gsearch.best_estimator_
         clf.fit(X_train_std, y_train)
         self.clf = clf
+        self.f1_value(y_test, self.clf.predict(X_test_std))
+        self.precision_recall_curve(self.clf, y_test, X_test_std)
         self.auc_curve(self.clf, y_test, X_test_std)
         print("======= END ======")
 
@@ -254,14 +254,14 @@ class SupervisedLearning():
         print("説明変数の重要度: ",self.clf_importance(self.X, clf))
         self.clf = clf
         print('テストデータ：Confusion matrix:\n{}'.format(confusion_matrix(y_test, clf.predict(X_test_std))))
-        self.f1_value(y_test, clf.predict(X_test_std))
+        self.f1_value(y_test, self.clf.predict(X_test_std))
         score = {
                 'train': metrics.accuracy_score(y_train, clf.predict(X_train_std)) ,
                 'test': metrics.accuracy_score(y_test, clf.predict(X_test_std))
             }
         print(score)
         self.cross_validation(max_depth=4)
-        self.precision_recall_curve(clf, y_test, X_test_std)
+        self.precision_recall_curve(self.clf, y_test, X_test_std)
         self.auc_curve(self.clf, y_test, X_test_std)
         print("============ end =============")
 
