@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime
 import os
 from const import *
-from parse import parser_mecab
+from parse import parser_mecab, pluck_ne
 from preprocessing.tfidf import *
 from replace import change_word, decode_word
 
@@ -107,7 +107,6 @@ class AddValues():
             st_no_df = dataframe[dataframe["st_no"] == st_no_key]
 
             score_df = st_no_df.score
-            score_values = list(set(list(st_no_df.score)))
             for i in st_no_df.iterrows():
                 series = i[1]
                 score_std = ( series.score - score_df.mean() ) / score_df.std()
@@ -152,6 +151,7 @@ class AddValues():
             current_data["first_final_diff_days"] = self.oral_first_final_diff_days(current_data)
             current_data["word_length"] = len(current_data["advice"])
             current_data["word_count"] = len(current_data["advice_divide_mecab"])
+            current_data["ne_word_count"] = len(pluck_ne(current_data["advice"]))
             current_data["identification_word_count"] = self.count_identification(current_data["advice_divide_mecab"])
             current_data["search_word_wakati"] = parser_mecab(str(current_data["search_word"]))
             current_data["is_match_keywords"] = 1 if self.is_match_keywords(current_data["search_word_wakati"], current_data["keywords"]) else 0
@@ -168,6 +168,7 @@ class AddValues():
             current_report["identification_word_count"] = self.count_identification(current_report["advice_divide_mecab"])
             current_report["word_length"] = len(current_report["advice"])
             current_report["word_count"] = len(current_report["advice_divide_mecab"])
+            current_report["ne_word_count"] = len(pluck_ne(current_report["advice"]))
 
     def add_values(self):
         for i in self.evaluations:

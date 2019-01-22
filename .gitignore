@@ -3,6 +3,7 @@ __pycache__
 /*.pickle
 /pickle/*.pickle
 /pickle/*.model
+/tmp_pickle/
 /preprocessing/rf2code.py
 /model/*.model
 /model/webdb/*
