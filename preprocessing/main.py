@@ -85,7 +85,6 @@ print("Add Predicted Finished!")
 print("Add Importance Rate")
 importances = load_pickle(load_file_name=CURRENTPATH+"/../pickle/importance_dict.pickle")
 reports = load_pickle(load_file_name=CURRENTPATH+"/../pickle/advice_add_predicted_svm.pickle")
-reports = tree.add_importances_rate(importances=importances, pickle_data=reports)
 dump_pickle(reports, dump_file_name=CURRENTPATH+"/../pickle/advice_add_importances_rate.pickle")
 print("Add Importance Rate Finished!")
 
