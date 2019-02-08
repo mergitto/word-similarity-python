@@ -1,5 +1,6 @@
 /const.py
 __pycache__
+*.pdf
 /*.pickle
 /pickle/*.pickle
 /pickle/*.model
