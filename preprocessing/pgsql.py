@@ -60,7 +60,7 @@ def allAdvise():
     for index, row in enumerate(dict_cur):
         report = dict(row)
         if report["advice"] != None:
-            report["advice"] = clensing(report["advice"])
+            report["advice"] = report["company_name"] + " " + clensing(report["advice"])
         else:
             report["advice"] = ''
         adviceDict[index] = {
