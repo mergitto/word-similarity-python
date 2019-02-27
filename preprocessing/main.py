@@ -19,6 +19,7 @@ drop_list = [
         "keywords", "modified", "score", "search_word", "search_word_wakati", "st_no",
         "most_highest_similarity", "is_good", "recommend_formula", "evaluation_id", "report_no",
         "similarity_sum", "is_match_keywords", "recommend_rank",
+        "questions_count", "questions",
         #"tfidf_top_average", "report_created_datetime", "ne_word_count",
         #'count_selection', 'today_created_diff_days, 'first_final_diff_days',
         #'identification_word_count', 'tfidf_sum', 'word_length', 'word_count',

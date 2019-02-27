@@ -79,6 +79,7 @@ def allAdvise():
                 "second_date": report["sec_oral_date"],
                 "final_date": report["fin_oral_date"],
                 "decision_date": report["decision_date"],
+                "questions": '' if report["oral_question"] is None else report["oral_question"],
         }
     return adviceDict
 

@@ -158,6 +158,7 @@ class AddValues():
             similarity = self.top_similality_of_keywords(current_data["search_word_wakati"], current_data["keywords"])
             current_data["most_highest_similarity"] = similarity["top"]
             current_data["similarity_sum"] = similarity["sum"]
+            current_data["questions_count"] = len(current_data["questions"].split(" "))
 
         for index in self.reports:
             current_report = self.reports[index]
@@ -169,6 +170,7 @@ class AddValues():
             current_report["word_length"] = len(current_report["advice"])
             current_report["word_count"] = len(current_report["advice_divide_mecab"])
             current_report["ne_word_count"] = len(pluck_ne(current_report["advice"]))
+            current_report["questions_count"] = len(current_report["questions"].split(" "))
 
     def add_values(self):
         for i in self.evaluations:
@@ -176,7 +178,7 @@ class AddValues():
             report_no_c_eval = c_eval["report_no"]
             add_key_list = [
                     "advice", "advice_divide_mecab", "tfidf_top_average", "tfidf_sum",
-                    "bm25", "bm25_sum", "bm25_average", "report_created_date",
+                    "bm25", "bm25_sum", "bm25_average", "report_created_date", "questions",
                     "info_date", "write_date", "first_date", "second_date", "final_date", "decision_date",
                 ]
             for index in self.reports:
