@@ -48,7 +48,7 @@ class SupervisedLearning():
         X_std,X_dummy_std = self.std_X(X_list, X_list)
         predicted = clf.predict(X_std)
         df[is_high_predicted_name] = [int(i) for i in predicted]
-        df[predicted_high_rate_name] = [high_rate[1] if high_rate[1] > 0.5 else 0 for high_rate in clf.predict_proba(X_std)]
+        df[predicted_high_rate_name] = [high_rate[1] for high_rate in clf.predict_proba(X_std)]
         return df.T.to_dict()
 
     def exist_key(self, dictionary, key_name=""):
@@ -72,22 +72,23 @@ class SupervisedLearning():
             importance_dict[X.columns[index]] = importance
         return importance_dict
 
-    def precision_recall_curve(self, clf, y_test, X_test):
+    def precision_recall_curve(self, clf, y_test, X_test, save_fig_name):
         from sklearn.metrics import precision_recall_curve
         precision, recall, thresholds = precision_recall_curve(y_test, clf.predict_proba(X_test)[:, 1])
-        plt.subplot(1, 2, 1)
+        plt.figure()
         plt.step(recall, precision, color='black', where='post')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
+        plt.savefig(save_fig_name)
 
-    def auc_curve(self, clf, y_test, X_test):
+    def auc_curve(self, clf, y_test, X_test, save_fig_name=""):
         from sklearn.metrics import roc_curve
         from sklearn.metrics import auc
         fpr, tpr, _ = roc_curve(y_test, clf.predict_proba(X_test)[:, 1])
         print("auc :", auc(fpr, tpr))
-        plt.subplot(1, 2, 2)
+        plt.figure()
         plt.step(fpr, tpr, color='b', alpha=0.2, where='post')
         plt.fill_between(fpr, tpr, step='post', alpha=0.2, color='b')
         plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
@@ -95,7 +96,7 @@ class SupervisedLearning():
         plt.xlabel('False Positive Rate')
         plt.ylim([0.0, 1.0])
         plt.xlim([0.0, 1.0])
-        #plt.savefig("Write save file name")
+        plt.savefig(save_fig_name)
 
     def cross_validation(self, max_depth=2):
         from sklearn.model_selection import cross_val_score
@@ -150,7 +151,7 @@ class SupervisedLearning():
             'activation': ['logistic', 'identity', 'relu', 'tanh']
             },]
         from sklearn.neural_network import MLPClassifier
-        gsearch = GridSearchCV(MLPClassifier(max_iter=1000), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
+        gsearch = GridSearchCV(MLPClassifier(max_iter=500), tuned_parameters, cv=5, scoring='accuracy', n_jobs=-1)
         gsearch.fit(X_train_std, y_train)
         print("ベストパラメータ:")
         print(gsearch.best_estimator_)
@@ -161,8 +162,8 @@ class SupervisedLearning():
         mlp.fit(X_train_std, y_train)
         self.clf = mlp
         self.f1_value(y_test, self.clf.predict(X_test_std))
-        self.precision_recall_curve(self.clf, y_test, X_test_std)
-        self.auc_curve(self.clf, y_test, X_test_std)
+        #self.precision_recall_curve(self.clf, y_test, X_test_std, save_fig_name="precision_recall_neural.pdf")
+        #self.auc_curve(self.clf, y_test, X_test_std, save_fig_name="auc_neural.pdf")
         print("======= END ======")
 
     def svm(self):
@@ -185,8 +186,8 @@ class SupervisedLearning():
         clf.fit(X_train_std, y_train)
         self.clf = clf
         self.f1_value(y_test, self.clf.predict(X_test_std))
-        self.precision_recall_curve(self.clf, y_test, X_test_std)
-        self.auc_curve(self.clf, y_test, X_test_std)
+        #self.precision_recall_curve(self.clf, y_test, X_test_std, save_fig_name="precision_recall_svm.pdf")
+        #self.auc_curve(self.clf, y_test, X_test_std, save_fig_name="auc_svm.pdf")
         print("======= END ======")
 
     def random_forest(self, random_state=0, max_depth=2):
@@ -215,7 +216,7 @@ class SupervisedLearning():
             }
         print(score)
         self.cross_validation(max_depth=4)
-        self.precision_recall_curve(self.clf, y_test, X_test_std)
-        self.auc_curve(self.clf, y_test, X_test_std)
+        #self.precision_recall_curve(self.clf, y_test, X_test_std, save_fig_name="precision_recall_randomf.pdf")
+        #self.auc_curve(self.clf, y_test, X_test_std, save_fig_name="auc_randomf.pdf")
         print("============ end =============")
 
